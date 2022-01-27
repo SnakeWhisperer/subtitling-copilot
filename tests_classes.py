@@ -28,6 +28,7 @@ class App:
         self.canvas.grid_rowconfigure(2, weight=1)
         self.options_1_label = tk.Label(self.canvas, text='Tool 1 in Options 1', bg='white', padx=30)
         self.choose_dir_label = tk.Label(self.canvas, text='Choose file(s)', bg='white', padx=60)
+        self.file_entry = tk.Entry(self.canvas, width=80, borderwidth=2)
         self.file_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_files)
         self.options_2_label = tk.Label(self.canvas, text='Tool 1 in Options 2', bg='white', padx=30)
 
@@ -36,7 +37,8 @@ class App:
             self.options_2_label.grid_forget()
             self.options_1_label.grid(column=0, row=0, sticky='w', pady=(30, 0))
             self.choose_dir_label.grid(column=0, row=1, sticky='w', pady=(30, 0))
-            self.file_browse.grid(column=1, row=1)
+            self.file_entry.grid(column=0, columnspan=2, row=2, sticky='w', padx=(60, 0))
+            self.file_browse.grid(column=2, row=2)
 
         def options_2_click(event):
 
