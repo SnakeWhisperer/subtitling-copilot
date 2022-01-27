@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 import tkinter.font as tkFont
+from functools import partial
+
+from mc_helper import batch_gen_CPS_sheet
 
 def browse_single_file():
     browsed_file = filedialog.askopenfilename()
@@ -12,6 +15,8 @@ def browse_multiple_files():
     browsed_files = filedialog.askopenfilenames()
     if browsed_files:
         print(browsed_files)
+
+
 
 def browse_dir():
     browsed_dir = filedialog.askdirectory()
@@ -49,6 +54,70 @@ class App:
         self.root.grid_columnconfigure(1, weight=1)
         self.root.grid_rowconfigure(8, weight=1)
 
+
+        def browse_tar_path():
+            browsed_files = filedialog.askopenfilenames()
+            if browsed_files:
+                file_names = ''
+                for i in range(len(browsed_files)):
+                    file_names += browsed_files[i] + '\n'
+
+                file_names.strip()
+                self.tar_files = file_names
+                self.target_files_field.insert('1.0', self.tar_files)
+                self.target_files_field.configure(state='disabled')
+
+        def browse_en_path():
+            browsed_files = filedialog.askopenfilenames()
+            if browsed_files:
+                file_names = ''
+                for i in range(len(browsed_files)):
+                    file_names += browsed_files[i] + '\n'
+                
+                file_names.strip()
+                self.en_files = file_names
+                self.source_files_field.insert('1.0', self.en_files)
+                self.source_files_field.configure(state='disabled')
+
+        def save_issue_sheet():
+            file_name = filedialog.asksaveasfilename(
+                defaultextension='.xlsx',
+                filetypes=(('MS Excel File', '*.xlsx'),)
+            )
+            self.save_to = file_name
+            self.save_to_entry.insert(0, self.save_to)
+            self.save_to_entry.configure(state='disabled')
+
+
+        def gen_issue_sheet():
+            if not self.tar_files:
+                self.issues_errors += 'Cannot generate issue spreadsheet. Please select at least one target file.\n'
+            if not self.en_files:
+                self.issues_errors += 'Cannot generate issue spreadsheet. Please select at least one English file.\n'
+            if not self.save_to:
+                self.issues_errors += 'Cannot generate issue spreadsheet. Please select a file name and path for the spreadsheet.\n'
+
+            if self.issues_errors:
+                self.results.configure(state='normal')
+                self.results.delete('1.0', tk.END)
+                self.results.insert('1.0', self.issues_errors)
+                self.results.configure(state='disabled')
+                self.issues_errors = ''
+                return
+            else:
+                self.results.configure(state='normal')
+                self.results.delete('1.0', tk.END)
+                self.results.configure(state='disabled')
+                print('Here')
+                en_path = self.en_files.split('\n')[0].split('/')
+                en_path = '\\'.join(en_path[:-1])
+                tar_path = self.tar_files.split('\n')[0].split('/')
+                tar_path = '\\'.join(tar_path[:-1])
+
+                print(en_path)
+                print(tar_path)
+                
+                batch_gen_CPS_sheet(en_path, tar_path, self.save_to, old=False)
         
 
         self.active_option = 10
@@ -142,15 +211,16 @@ class App:
 
         self.gen_issue_sheet_label = tk.Label(self.canvas, text='Generate issue spreadsheet', bg='white', padx=30, font=self.header_1_font)
         self.target_files_label = tk.Label(self.canvas, text='Target file(s)', bg='white', padx=60, font=self.sub_header_font)
-        self.target_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=80, height=6, borderwidth=2)
-        self.target_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_multiple_files)
+        self.target_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=110, height=6, borderwidth=2, wrap='none')
+        # self.browse_tar_files_action = partial(browse_multiple_files, 'tar_files')
+        self.target_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_tar_path)
         self.source_files_label = tk.Label(self.canvas, text='Source file(s)', bg='white', padx=60, font=self.sub_header_font)
-        self.source_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=80, height=6, borderwidth=2)
-        self.source_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_multiple_files)
+        self.source_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=110, height=6, borderwidth=2, wrap='none')
+        self.source_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_en_path)
         self.save_spreadsheet_label = tk.Label(self.canvas, text='Save issue spreadsheet to...', bg='white', padx=60, font=self.sub_header_font)
-        self.save_to_entry = tk.Entry(self.canvas, width=80, borderwidth=2)
-        self.save_to_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir)
-        self.generate_excel_button = tk.Button(self.canvas, text='Generate', height=1, width=15, padx=30)
+        self.save_to_entry = tk.Entry(self.canvas, width=110, borderwidth=2)
+        self.save_to_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=save_issue_sheet)
+        self.generate_excel_button = tk.Button(self.canvas, text='Generate', height=1, width=15, padx=30, command=gen_issue_sheet)
         
 
 
@@ -473,8 +543,14 @@ class App:
                 self.generate_excel_button.grid(column=3, row=7)
                 self.results_label.grid(column=0, row=8, sticky='w', pady=(30, 0))
                 self.results.grid(column=0, columnspan=4, row=9, pady=25, padx=25, sticky='nsew')
-                self.results.insert('1.0', 'Test\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\n')
+                # self.results.insert('1.0', 'Test\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\n')
                 self.results.configure(state='disabled')
+
+                self.tar_files = ''
+                self.en_files = ''
+                self.save_to = ''
+                self.issues_errors = ''
+                self.issues_results = ''
 
 
         self.OST_button.grid(column=0, row=0, rowspan=2, sticky='we')
