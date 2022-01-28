@@ -194,7 +194,7 @@ def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
 
 def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
                         CPS=True, CPS_limit=25, CPL=True, CPL_limit=42,
-                        lines=True, max_lines=2, old=True):
+                        lines=True, max_lines=2, old=True, GUI=True):
     """Generates a .xlsx spreadsheet with the text corresponding
     to reading speed issues and some context,
     in the target language and in the source language.
@@ -238,17 +238,28 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
     worksheet.write(1, 5, 'Fix', header_format)
     worksheet.write(1, 6, 'Notes', header_format)
 
-    os.chdir(tar_path)
-    # All files including everything that's not a subtitle file.
-    all_tar_files = os.listdir()
-    tar_sub_files = []
 
-    os.chdir(en_path)
-    # All files including everything that's not a subtitle file.
-    all_en_files = os.listdir()
-    en_sub_files = []
+    if not GUI:
+        os.chdir(tar_path)
+        
+        # All files including everything that's not a subtitle file.
+        all_tar_files = os.listdir()
+        tar_sub_files = []
 
-    os.chdir(original_dir)
+        os.chdir(en_path)
+        # All files including everything that's not a subtitle file.
+        all_en_files = os.listdir()
+        en_sub_files = []
+
+        os.chdir(original_dir)
+    
+    else:
+        all_tar_files = tar_path
+        tar_sub_files = []
+        all_en_files = en_path
+        en_sub_files = []
+
+
     row_count = 2
 
     num_files = max(len(all_tar_files), len(all_en_files))
@@ -269,14 +280,28 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
 
             if en_ext == '.vtt':
                 en_sub_files.append(all_en_files[i])
+
+    if GUI:
+        if len(tar_sub_files) > len(en_sub_files):
+            return 'Cannot generate issue spreadsheet. Received more target VTT files than source VTT files.'
+        elif len(en_sub_files) > len(tar_sub_files):
+            return 'Cannot generate issue spreadsheet. Received more source VTT files than target VTT files.'
     
     # NOTE: This loop assumes a complete and absolute match
     #       between all the files in the source language list
     #       and the target language list.
     for j in range(len(tar_sub_files)):
         # name_short = re.search('[^_]+_[^_]+', tar_sub_files[i])
-        en_file_name = en_path + r'\\' + en_sub_files[j]
-        tar_file_name = tar_path + r'\\' + tar_sub_files[j]
+
+        if not GUI:
+            en_file_name = en_path + r'\\' + en_sub_files[j]
+            tar_file_name = tar_path + r'\\' + tar_sub_files[j]
+        else:
+            en_file_name = en_sub_files[j]
+            tar_file_name = tar_sub_files[j]
+            # print('The files')
+            # print(en_file_name)
+            # print(tar_file_name)
 
         # Add any reading speed issue to the generated sheet.
         row_count = gen_CPS_sheet(
@@ -294,7 +319,8 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
             max_lines=max_lines,
             row_count=row_count,
             batch=True,
-            old=old
+            old=old,
+            GUI=GUI
         )
 
     workbook.close()
@@ -305,7 +331,7 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
 def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
                   OST=False, seg=False, CPS=True, CPS_limit=25, CPL=True,
                   CPL_limit=42, lines=True, max_lines=2,
-                  batch=False, row_count=2, old=True):
+                  batch=False, row_count=2, old=True, GUI=True):
     """Generates or writes to a .xlsx file with the text
     with reading speed issues and previous and subsequent segments
     for context.
@@ -347,12 +373,17 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
         so that the calling function can keep track of the rows.
     """
 
-    # The video name extracted from the absolute path
-    # to the English file.
-    video_name = en_file_name.split('\\')[-1]
-    # Short name with the code for the class and the video number,
-    # like JH_102.
-    name_short = re.search('[^_]+_[^_]+', video_name).group()
+    if not GUI:
+        # The video name extracted from the absolute path
+        # to the English file.
+        video_name = en_file_name.split('\\')[-1]
+        # Short name with the code for the class and the video number,
+        # like JH_102.
+        name_short = re.search('[^_]+_[^_]+', video_name).group()
+    else:
+        video_name = en_file_name.split('/')[-1]
+        name_short = re.search('[^_]+_[^_]+', video_name).group()
+
     print(name_short)
     # Only for debugging purposes
     # if name_short == 'BC_09':

@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import filedialog
-from tkinter.scrolledtext import ScrolledText
 
 
 root = tk.Tk()
