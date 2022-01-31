@@ -1249,7 +1249,7 @@ def check_OSTs(directory, old=True):
             for i, sub in enumerate(vtt_subs):
                 tag_match = re.search('^\[.*\]$', ''.join(sub.untagged_text))
 
-                if sub.line != 'auto' and not tag_match:
+                if sub.line == 20 and not tag_match:
                     OST_errors.append(i)
                 
                 elif sub.line == 'auto' and tag_match:
@@ -1378,7 +1378,8 @@ def italics_consist(directory, look_up, old=True):
     return lang_cont
 
 
-def extract_OSTs(file_name, batch=False, old=True):
+def extract_OSTs(file_name, save_OST_dir, batch=False, delete_OSTs=False,
+                 save_OSTs=True, old=False):
     """[summary]
 
     Parameters
@@ -1387,35 +1388,76 @@ def extract_OSTs(file_name, batch=False, old=True):
         [description]
     """
 
+    original_dir = os.getcwd()
 
-    if not batch:
-        actual_file_name, ext = os.path.splitext(file_name.split('\\')[-1])
-        new_file_name = f'{actual_file_name}__OSTs{ext}'
-    else:
-        pass
+
+    # if not batch:
+    #     actual_file_name, ext = os.path.splitext(file_name.split('\\')[-1])
+    #     new_file_name = f'{actual_file_name}__OSTs{ext}'
+    # else:
+    #     pass
+
+    warnings = ''
+    errors = ''
+    actual_file_name, ext = os.path.splitext(file_name.split('\\')[-1])
+    new_file_name = f'{actual_file_name}__OSTs{ext}'
 
     if old:
         subs = decode_VTT(read_text_file(file_name))['subtitles']
     else:
         subs = parse_VTT(file_name)['cues']
+
     OSTs = []
     OST_indexes = []
+    possible_OSTs = []
+    possible_OST_indexes = []
 
     for i, sub in enumerate(subs):
-        if sub.line != 'auto':
-            OSTs.append(copy.deepcopy(sub))
-            OST_indexes.append(i)
+        check_text = '\n'.join(sub.untagged_text)
+        if sub.line == 20:
+            possible_OSTs
+            possible_OST_indexes.append(i)
+            if (re.search('^\[.*\][\.,]*$', check_text)
+                or re.search('^\[+[A-ZÀ-Ý ]{2,}', check_text)
+                or re.search('[A-ZÀ-Ý ]{2,}\]+$', check_text)
+                or re.search('^[A-ZÀ-Ý ]{2,}$', check_text)
+                or re.search('^\[.+', check_text)
+                or re.search('.+\]$', check_text)):
+                # Considered actual OST
+                OSTs.append(copy.deepcopy(sub))
+                OST_indexes.append(i)                
 
-    for j in reversed(OST_indexes):
-        subs.pop(j)
+    if delete_OSTs:
+        for j in reversed(OST_indexes):
+            subs.pop(j)
 
-    save_VTT_subs('Test' + actual_file_name+ext, subs)
-    save_VTT_subs('Test' + new_file_name, OSTs)
+        subs_cont = {'stylesheets': [], 'regions': {}, 'cues': subs}
+        # save_VTT_subs('Test' + actual_file_name+ext, subs_cont)
+        save_VTT_subs(file_name, subs_cont)
 
-    return
+    if save_OSTs:
+        os.chdir(save_OST_dir)
+        short_name_match = re.search('^[\dA-Za-z]+_[\dA-Za-z]+_', actual_file_name)
+        if short_name_match:
+            short_letters = re.search('[A-Za-z]+', short_name_match.group())
+            short_numbers = re.search('\d+', short_name_match.group())
+
+        if short_name_match and short_letters and short_numbers:
+            OST_file_name = short_letters.group() + '_' + short_numbers.group() + '_OST.vtt'
+        else:
+            warnings = f'Could not decode class code for file {file_name}. Saving OST file as {new_file_name}'
+            OST_file_name = new_file_name
+
+        OST_cont = {'stylesheets': [], 'regions': {}, 'cues': OSTs}
+        # save_VTT_subs('Test' + new_file_name, OST_cont)
+        save_VTT_subs(OST_file_name, OST_cont)
+        os.chdir(original_dir)
+
+    return (warnings, errors)
 
 
-def batch_extract_OSTs(lang_path):
+def batch_extract_OSTs(lang_path, save_OST_dir,
+                       delete_OSTs=False, save_OSTs=True):
     """[summary]
 
     Parameters
@@ -1424,15 +1466,50 @@ def batch_extract_OSTs(lang_path):
         [description]
     """
 
+    global_errors = {}
+    global_warnings = {}
 
     original_dir = os.getcwd()
     # os.chdir(lang_path)
     # parent_dir = os.path.dirname(lang_path)
 
-    parent_dir = r'\\'.join(lang_path.split('\\')[:-1])
-    lang = lang_path.split('\\')[-1]
-    new_dir = parent_dir + r'\\' + lang+'__Auto_OSTs' 
-    os.mkdir(new_dir)
+    # parent_dir = r'\\'.join(lang_path.split('\\')[:-1])
+    # lang = lang_path.split('\\')[-1]
+    # new_dir = parent_dir + r'\\' + lang+'__Auto_OSTs' 
+    # os.mkdir(new_dir)
+
+    os.chdir(lang_path)
+    all_sub_files = os.listdir()
+    sub_files = []
+
+    # NOTE: No check is being made here for files that are not .vtt.
+
+    for i, sub_file in enumerate(all_sub_files):
+        name, ext = os.path.splitext(sub_file)
+
+        if ext == '.vtt':
+            full_file_name = lang_path + '\\' + sub_file
+            warnings, errors = extract_OSTs(
+                full_file_name,
+                save_OST_dir=save_OST_dir,
+                batch=True,
+                delete_OSTs=delete_OSTs,
+                save_OSTs=save_OSTs
+            )
+
+            if warnings:
+                global_warnings[full_file_name] = warnings
+            if errors:
+                global_errors[full_file_name] = errors
+
+    os.chdir(original_dir)
+    
+    if global_errors or global_warnings:
+        return (global_warnings, global_errors)
+
+    else:
+        return False
+
 
     
 
@@ -1484,12 +1561,16 @@ def count_CPS(directory, CPS_limit=25):
     
 
 
-def get_OSTs(directory):
+def get_OSTs(directory, save_OSTs_dir, files=True):
 
     original_path = os.getcwd()
-    os.chdir(directory)
+    if not files:
+        os.chdir(directory)
 
-    file_list = os.listdir()
+        file_list = os.listdir()
+    else:
+        file_list = directory
+
     OST_files = []
 
     for fi in file_list:
@@ -1543,7 +1624,6 @@ def get_OSTs(directory):
                     raw_text = raw_text + ']'
                 
                 raw_text = raw_text.upper()
-
                 text = VTT_text_parser(raw_text)
 
                 va = 2
@@ -1562,20 +1642,23 @@ def get_OSTs(directory):
                 counter += 1
 
                 va = 2
-
-
-
-            save_VTT_subs(name + '.vtt', {'regions': [], 'styles': [], 'cues': OSTs})
+            
+            OST_name = name.split('/')[-1]
+            OST_file_name = save_OSTs_dir + '\\' + OST_name + '.vtt'
+            save_VTT_subs(OST_file_name, {'regions': [], 'styles': [], 'cues': OSTs})
 
     os.chdir(original_path)
 
 
-def get_OSTs_single(file_name):
+def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
     illegal_chars = ['#', '%', '&', '{', '}', '\\', '<', '>', '*', "?", '/',
                      ' ', '$', '!', "'", '"', ':', '@', '+', '`', '|', '=']
 
-    act_file_name = file_name.split('\\')[-1]
+    if GUI:
+        act_file_name = file_name.split('/')[-1]
+    else:
+        act_file_name = file_name.split('\\')[-1]
 
     name_prefix = re.search('^\s*[a-zA-Z0-9]+_', act_file_name).group()
     name_prefix = name_prefix.strip()
@@ -1639,6 +1722,10 @@ def get_OSTs_single(file_name):
             for char in illegal_chars:
                 if char in OST_name:
                     OST_name = OST_name.replace(char, '_')
+
+            # OST_name = save_OST_dir + '\\' + OST_name
+            OST_name = save_OST_dir + '/' + OST_name
+            print(OST_name)
 
             new_file = False
             OSTs = []

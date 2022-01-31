@@ -469,8 +469,7 @@ class Subtitle(object):
 
 
     def __init__(self, number, text, tokenized_text, untagged_text,
-                 start_time, end_time, dialogue=False,
-                 italics=[], underline=[]):
+                 start_time, end_time, italics=[], underline=[]):
         """
         """
 
@@ -481,13 +480,23 @@ class Subtitle(object):
         self.untagged_text = untagged_text
         self.start_time = start_time
         self.end_time = end_time
-        self.dialogue = dialogue
         self.italics = italics
         self.underline = underline
         self.line_lengths = self.get_line_lengths()
         self.total_length = self.get_total_length()[0]
         self.CPS = self.get_CPS(spaces=True)
         self.CPS_ns = self.get_CPS(spaces=False)
+
+        self.dialogue = True
+        for line in self.untagged_text:
+            if number == 30:
+                print(line)
+                print(line[0])
+                print(self.dialogue)
+                if line[0] != '-':
+                    print('Error')
+                    self.dialogue = False
+                print(self.dialogue)
 
 
     def __str__(self):
@@ -622,7 +631,7 @@ class SRT(Subtitle):
         [description]
     """
 
-    def __init__(self, number, text, start_time, end_time, dialogue=False,
+    def __init__(self, number, text, start_time, end_time,
                  italics=[], underline=[], bold=[], colors=[]):
 
         """[summary]
@@ -808,17 +817,16 @@ class WebVTT(Subtitle):
 
 
     def __init__(self, number, text, tokenized_text, untagged_text,
-                 start_time, end_time, dialogue=False,
-                 identifier='', region=None, vertical='', line='auto',
-                 line_align='start', snap_to_lines=True,
-                 position='auto', position_align='auto',
+                 start_time, end_time, identifier='', region=None,
+                 vertical='', line='auto', line_align='start',
+                 snap_to_lines=True, position='auto', position_align='auto',
                  size=100, align='center', italics=[], bold=[], underline=[]):
         
         # NOTE: What would be the difference between using this
         #       and using the super() method.
         Subtitle.__init__(self, number, text, tokenized_text, untagged_text,
-                          start_time, end_time, dialogue,
-                          italics=italics, underline=underline)
+                          start_time, end_time, italics=italics,
+                          underline=underline)
         self.identifier = identifier
         self.region = region
         self.vertical = vertical
