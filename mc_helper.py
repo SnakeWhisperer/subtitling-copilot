@@ -1,4 +1,4 @@
-import re, os, xlsxwriter, srt_handler, openpyxl, copy, docx
+import re, os, xlsxwriter, srt_handler, copy, docx
 
 from decoders import decode_VTT, parse_VTT, VTT_text_parser
 from reader import read_text_file
@@ -386,8 +386,8 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
 
     print(name_short)
     # Only for debugging purposes
-    # if name_short == 'BC_09':
-    #     hello = 234
+    if name_short == '103_DBa':
+        hello = 234
 
     # If not called for batch work, it means that a Workbook
     # and a Worksheet need to be created.
@@ -856,7 +856,10 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
             sents_bkw += 1
         
         i -= 1
-
+    
+    print(offending_sub)
+    print(' '.join(cont_bkw))
+    print(subs[i])
     if offending_sub == 174:
         hello =23
     if backward:
@@ -873,15 +876,46 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                 ' '.join(subs[i].untagged_text)
             )
 
+            bkw_end_match_3 = re.search(
+                "»*\s*[.?!]\s*[»']*\s*$",
+                ' '.join(subs[i].untagged_text)
+            )
+
             bkw_end_match_2 = re.search('…$', ' '.join(subs[i].untagged_text))
 
             if not bkw_end_match and not bkw_end_match_2:
-                first_sent_ind = re.search(
-                    '»*\s*[.?!][\s*»*"*]+\s*',
-                    cont_bkw
-                ).end()
 
-                cont_bkw = cont_bkw[first_sent_ind:]
+                # '»*\s*[.?!][\s*»*"*]+\s*',
+                first_sent_ind_match = re.search(
+                    '»*\s*[.?!]\s*[»"]*\s*',
+                    cont_bkw
+                )
+
+                # "»*\s*[.?!][\s*»*'*]+\s*",
+                first_sent_ind_match_1 = re.search(
+                    "»*\s*[.?!]\s*[»']*\s*",
+                    cont_bkw
+                )
+                
+                
+                # first_sent_ind = re.search(
+                #     '»*\s*[.?!][\s*»*"*]+\s*',
+                #     cont_bkw
+                # ).end()
+
+                # first_sent_ind_1 = re.search(
+                #     "»*\s*[.?!][\s*»*'*]+\s*"",
+                #     cont_bkw
+                # ).end()
+                
+                if first_sent_ind_match:
+                    first_sent_ind = first_sent_ind_match.end()
+                    cont_bkw = cont_bkw[first_sent_ind:]
+                elif first_sent_ind_match_1:
+                    first_sent_ind_1 = first_sent_ind_match_1.end()
+                    cont_bkw = cont_bkw[first_sent_ind_1:]
+                else:
+                    pass
 
         if cont_bkw:
             cont_bkw = cont_bkw[re.search('[^.?!»\s]', cont_bkw).span()[0]:]
@@ -1219,12 +1253,6 @@ def pre_fix(file_name, lang, old=True):
     save_VTT_subs(f'{name}__fixed{ext}', subtitles)
 
 
-
-def download_status(book_name):
-
-
-    workbook = openpyxl.load_workbook(book_name)
-    sheets = workbook.sheetnames
 
 
 def check_OSTs(directory, old=True):
@@ -1652,6 +1680,7 @@ def get_OSTs(directory, save_OSTs_dir, files=True):
 
 def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
+
     illegal_chars = ['#', '%', '&', '{', '}', '\\', '<', '>', '*', "?", '/',
                      ' ', '$', '!', "'", '"', ':', '@', '+', '`', '|', '=']
 
@@ -1673,7 +1702,9 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
         new_file = True
 
+        # if re.search('^\s*\d+\.', para.text) or re.search('^[^\d]+\d+$', para.text):
         if re.search('^\s*\d+\.', para.text):
+            # print(para.text)
             
             if OSTs_raw:
                 OSTs = []
@@ -1713,6 +1744,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
             # OST_name = para.text + '.vtt'
             file_number = re.search('\d+', para.text).group()
+            # print(file_number)
             if len(file_number) == 1:
                 OST_name = name_prefix + '10' + file_number + '_OST.vtt'
             else:
@@ -1733,6 +1765,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
             continue
 
         if re.search('\s*\d\d:\d\d\s*', para.text):
+            # print(para.text)
 
             if seen_time:
                 OSTs_raw.append((start_time, end_time, cue_text))
@@ -1751,6 +1784,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
             if para.text:
                 if not cue_text:
                     cue_text += para.text
+                    # print(para.text)
                 else:
                     cue_text += '\n' + para.text
             else:

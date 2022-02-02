@@ -1,7 +1,5 @@
 import copy, re, os, csv
 
-import matplotlib.pyplot as plt
-
 from decoders import decode_VTT, decode_SRT, parse_VTT
 from encoders import encode_VTT
 from reader import read_text_file, hash_file
@@ -9,22 +7,22 @@ from classes import Timecode
 from utils import get_frame_rate
 
 
-def get_NF_glyph_list():
+# def get_NF_glyph_list():
 
-    glyph_list = []
+#     glyph_list = []
 
-    with open('NGL2-Final-External-Use.xlsx - Copy of NGL2_Source.csv', encoding='utf-8-sig') as glyphs:
-        csv_reader = csv.reader(glyphs, delimiter=',')
-        line_count = 0
+#     with open('NGL2-Final-External-Use.xlsx - Copy of NGL2_Source.csv', encoding='utf-8-sig') as glyphs:
+#         csv_reader = csv.reader(glyphs, delimiter=',')
+#         line_count = 0
 
-        for row in csv_reader:
-            if not re.search('^0x', row[0]):
-                print(row)
-            else:
-                int_val = int(row[0], 16)
-                glyph_list.append(chr(int_val))
+#         for row in csv_reader:
+#             if not re.search('^0x', row[0]):
+#                 print(row)
+#             else:
+#                 int_val = int(row[0], 16)
+#                 glyph_list.append(chr(int_val))
 
-    return glyph_list
+#     return glyph_list
         
 
 def check_sort(file_name, old=True):
@@ -72,7 +70,8 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
         print('The specified format is invalid or not supported.')
         return
     
-    glyph_list = get_NF_glyph_list()
+    # glyph_list = get_NF_glyph_list()
+    glyph_list = []
 
     current_dir = os.getcwd()
     os.chdir(videos_dir)
@@ -157,7 +156,7 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
                 sub_file,
                 '\n'
             ])
-        else:
+        elif not GUI:
             print(sub_file)
             print('\n')
 
@@ -212,7 +211,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
                   CPL_limit=42, frame_rate=24, max_lines=2, min_duration=0.833,
                   max_duration=7, ellipses=True, gaps=True, batch=False,
                   report=False, report_name='', old=True,
-                  glyphs=True, glyph_list=[], check_TCFOL=True, check_OST=True,
+                  glyphs=False, glyph_list=[], check_TCFOL=True, check_OST=True,
                   GUI=True):
 
     # print(f'Currently checking {file_name}')
@@ -308,11 +307,6 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
 
             error_counter += 1
         
-        if sub.number == 30:
-                print(len(sub.untagged_text))
-                print(sub.total_length)
-                print(sub.dialogue)
-                print(check_TCFOL)
         # Check if text fits in one line.
         if (check_TCFOL and len(sub.untagged_text) > 1
             and sub.total_length < CPL_limit and not sub.dialogue):
@@ -331,15 +325,16 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
             )
             
             error_counter += 1
+        
+        if glyphs:
+            for line in sub.untagged_text:
+                for char in line:
+                    if char not in glyph_list:
+                        general[f'{sub.number}_{error_counter}'] = (
+                            f'Invalid character (char).'
+                        )
 
-        for line in sub.untagged_text:
-            for char in line:
-                if char not in glyph_list:
-                    general[f'{sub.number}_{error_counter}'] = (
-                        f'Invalid character (char).'
-                    )
-
-                    error_counter += 1
+                        error_counter += 1
 
         # # NOTE: There is another loop above.
         # #       Having two loops don't really seem very efficient.
@@ -486,7 +481,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
 
     else:
         return('\n\n\tNo issues found.')
-        print('\n\n\tNo issues found.')
+        # print('\n\n\tNo issues found.')
 
 
 def check_gaps_one(index, subtitles, invalid_range=(3,11), error_counter=1,
@@ -877,43 +872,7 @@ def check_near_shot_changes(sub_num, first_found, time, shot_change_list,
 
 
 
-def compare_frames(frame_rate, ffout_name, plot=True, plot_title=''):
 
-    ffmpeg_out = read_text_file(ffout_name)
-    ffmpeg_frames = []
-
-    for line in ffmpeg_out:
-        time = re.search('pts_time:\d+\.*\d*', line)
-        if time:
-            frame_num = re.search('n:\s*\d+', line).group()
-            frame_num = re.search('\d+', frame_num).group()
-            time = re.search('\d+\.*\d*', time.group()).group()
-            ffmpeg_frames.append(float(time))
-
-    standard_frames = []
-    ffmpeg_frame_diff = []
-    standard_frame_diff = []
-
-    for i in range(len(ffmpeg_frames)):
-        standard_frames.append((i / frame_rate))
-        if i > 0:
-            ffmpeg_frame_diff.append(round(
-                ffmpeg_frames[i] - ffmpeg_frames[i-1], 3))
-
-            standard_frame_diff.append(round(
-                standard_frames[i] - standard_frames[i-1], 3))
-    if plot:
-        plt.plot(
-            ffmpeg_frame_diff, 'ro',
-            standard_frame_diff, 'bo',
-            markersize=0.005
-        )
-        plt.xlabel('frames')
-        plt.ylabel('seconds')
-        plt.title(plot_title + ' @' + str(frame_rate) + 'fps')
-        plt.savefig(plot_title + '.png', dpi=600)
-
-    return (ffmpeg_frames, ffmpeg_frame_diff, standard_frames, standard_frame_diff)
 
 
 def check_sort(file_name):

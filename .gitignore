@@ -1,3 +1,4 @@
 *.pyc
 dist
+*.7z
 __pycache__

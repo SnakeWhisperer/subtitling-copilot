@@ -487,16 +487,15 @@ class Subtitle(object):
         self.CPS = self.get_CPS(spaces=True)
         self.CPS_ns = self.get_CPS(spaces=False)
 
-        self.dialogue = True
-        for line in self.untagged_text:
-            if number == 30:
-                print(line)
-                print(line[0])
-                print(self.dialogue)
+        if self.text:
+            self.dialogue = True
+
+            for line in self.untagged_text:
                 if line[0] != '-':
-                    print('Error')
                     self.dialogue = False
-                print(self.dialogue)
+
+        else:
+            self.dialogue = False
 
 
     def __str__(self):

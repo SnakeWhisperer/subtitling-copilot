@@ -1,4 +1,4 @@
-import os, shutil, re, cv2
+import os, shutil, re, ffmpeg# cv2
 
 from reader import read_text_file, hash_file
 from classes import Timecode, WebVTT
@@ -25,13 +25,21 @@ def fps_check(file_name):
     print(duration_summation / len(durations))
 
 
-def get_frame_rate(video):
-    cap = cv2.VideoCapture(video)
-    frame_rate = cap.get(cv2.CAP_PROP_FPS)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    # print(frame_count)
+# def get_frame_rate(video):
+#     cap = cv2.VideoCapture(video)
+#     frame_rate = cap.get(cv2.CAP_PROP_FPS)
+#     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+#     # print(frame_count)
 
-    return frame_rate
+#     return frame_rate
+
+
+def get_frame_rate(video):
+    probe = ffmpeg.probe(video)
+    video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
+    fps = eval(video_info['r_frame_rate'])
+
+    return fps
 
 def batch_get_frame_rates(directory):
     original_dir = os.getcwd()
