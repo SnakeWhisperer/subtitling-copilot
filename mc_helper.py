@@ -1702,9 +1702,9 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
         new_file = True
 
-        # if re.search('^\s*\d+\.', para.text) or re.search('^[^\d]+\d+$', para.text):
-        if re.search('^\s*\d+\.', para.text):
-            # print(para.text)
+        if ((re.search('^\s*\d+\.', para.text) or re.search('^[^\d]+\d+$', para.text)) and not seen_time):
+        # if re.search('^\s*\d+\.', para.text):
+            print(para.text)
             
             if OSTs_raw:
                 OSTs = []
@@ -1757,7 +1757,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
             # OST_name = save_OST_dir + '\\' + OST_name
             OST_name = save_OST_dir + '/' + OST_name
-            print(OST_name)
+            # print(OST_name)
 
             new_file = False
             OSTs = []
@@ -1790,6 +1790,9 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
             else:
                 va = 2
                 OSTs_raw.append((start_time, end_time, cue_text))
+                # print('\n\n')
+                # print(start_time)
+                # print(cue_text)
                 seen_time = False
                 cue_text = ''
 
@@ -1798,6 +1801,9 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
 
         for OST in OSTs_raw:
             raw_text = OST[2]
+            print(OST[0])
+            print(raw_text)
+            print('\n\n')
 
             if not re.search('^\s*\[', raw_text):
                 raw_text = '[' + raw_text

@@ -1,4 +1,4 @@
-import os
+import os, ctypes
 
 import tkinter as tk
 from tkinter import filedialog
@@ -36,19 +36,32 @@ class App:
         self.root.title('Subtitling Copilot')
         self.root.configure(background='#606060')
 
-        self.option_font = tkFont.Font(size=11, weight='bold')
-        self.header_1_font = tkFont.Font(size=15, weight='bold', slant='italic')
-        self.results_font = tkFont.Font(size=12, weight='bold')
-        self.sub_header_font = tkFont.Font(size=10)
 
-        screen_w = self.root.winfo_screenwidth()
-        screen_h = self.root.winfo_screenheight()
-        self.fixed_w = int(screen_w*0.8)
-        self.fixed_h = int(screen_h*0.8)
+        # screen_w = self.root.winfo_screenwidth()
+        # screen_h = self.root.winfo_screenheight()
+
+        user32 = ctypes.windll.user32
+        screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
+        self.screen_w = screensize[0]
+        self.screen_h = screensize[1]
+
+
+        print(self.screen_w)
+        print(self.screen_h)
+        self.fixed_w = int(self.screen_w*0.8)
+        self.fixed_h = int(self.screen_h*0.8)
+        print(self.fixed_w)
+        print(self.fixed_h)
         self.root.minsize(self.fixed_w, self.fixed_h)
         self.root.maxsize(self.fixed_w, self.fixed_h)
-        win_x = int((screen_w / 2) - (self.fixed_w/2))
-        win_y = int((screen_h / 2) - (self.fixed_h/2))
+        win_x = int((self.screen_w / 2) - (self.fixed_w/2))
+        win_y = int((self.screen_h / 2) - (self.fixed_h/2))
+        self.fixed_w_str = str(self.fixed_w)
+        self.fixed_h_str = str(self.fixed_h)
+        self.root.geometry(f'{self.fixed_w_str}x{self.fixed_h_str}+{win_x}+{win_y}')
+        # print(win_x)
+        # print(win_y)
 
         # win_x = int((screen_w / 2) - 800)
         # win_y = int((screen_h / 2) - 450)
@@ -58,10 +71,21 @@ class App:
         # self.root.maxsize(1600, 900)
 
 
-        self.OST_button = tk.Label(self.root, text="OST", height=2, width=18, pady=30, bg='#606060', fg='white', font=self.option_font)
-        self.QC_button = tk.Label(self.root, text="Batch QC", height=2, width=18, pady=30,bg='#606060', fg='white', font=self.option_font)
+        self.option_font = tkFont.Font(size=int(self.fixed_h*0.013), weight='bold')
+        self.header_1_font = tkFont.Font(size=int(self.fixed_h*0.017), weight='bold', slant='italic')
+        self.results_font = tkFont.Font(size=int(self.fixed_h*0.014), weight='bold')
+        self.sub_header_font = tkFont.Font(size=int(self.fixed_h*0.012))
+        self.button_font = tkFont.Font(size=round(self.fixed_h*0.01))
+        self.entry_font = tkFont.Font(size=int(self.fixed_h*0.01))
+        self.label_font = tkFont.Font(size=10)
+        self.results_content_font = tkFont.Font(size=int(self.fixed_h*0.012))
+        # self.button_font = tkFont.Font(size=9)
+
+
+        self.OST_button = tk.Label(self.root, text="OST", height=int(self.fixed_h*0.002), width=int(self.fixed_w*0.01), pady=int(self.fixed_h*0.035), bg='#606060', fg='white', font=self.option_font)
+        self.QC_button = tk.Label(self.root, text="Batch QC", height=int(self.fixed_h*0.002), width=int(self.fixed_w*0.01), pady=int(self.fixed_h*0.035), bg='#606060', fg='white', font=self.option_font)
         # self.prefix_button = tk.Label(self.root, text="Pre-fix", height=2, width=18, pady=30, bg='#606060', fg='white', font=self.option_font)
-        self.issues_button = tk.Label(self.root, text="Issues", height=2, width=18, pady=30, bg='#606060', fg='white', font=self.option_font)
+        self.issues_button = tk.Label(self.root, text="Issues", height=int(self.fixed_h*0.002), width=int(self.fixed_w*0.01), pady=int(self.fixed_h*0.035), bg='#606060', fg='white', font=self.option_font)
         self.canvas = tk.Canvas(self.root, bg='white', highlightthickness=0)
         self.canvas.grid(column=1, row=0, columnspan=7, rowspan=9, sticky='nsew')
         self.root.grid_columnconfigure(1, weight=1)
@@ -260,6 +284,11 @@ class App:
                     batch_merge_subs(self.merge_sub_dir, self.merge_OST_dir, self.merge_sub_dir)
                 else:
                     batch_merge_subs(self.merge_sub_dir, self.merge_OST_dir, self.save_merge_OST_dir)
+
+                self.OST_results.configure(state='normal')
+                self.OST_results.delete('1.0', tk.END)
+                self.OST_results.insert('1.0', 'Files merged successfully.')
+                self.OST_results.configure(state='disabled')
             
 
             
@@ -310,6 +339,11 @@ class App:
                 else:
                     OST_audit_files_list = self.OST_audit_files.split('\n')
                     get_OSTs(OST_audit_files_list, self.OST_gen_save_dir)
+                self.OST_results.configure(state='normal')
+                self.OST_results.delete('1.0', tk.END)
+                self.OST_results.insert('1.0', 'OSTs generated successfully.')
+                self.OST_results.configure(state='disabled')
+                
                     
                     
         def browse_QC_sub_dir():
@@ -547,51 +581,51 @@ class App:
         self.var_del_OSTs = tk.IntVar()
         self.var_save_OSTs = tk.IntVar()
 
-        self.OST_ext_label = tk.Label(self.canvas, text="Extract OSTs", bg='white', padx=30, font=self.header_1_font)
-        self.lang_dir_label_1 = tk.Label(self.canvas, text='Subtitle file(s) directory:', bg='white', padx=60)
-        self.lang_dir_entry_1 = tk.Entry(self.canvas, width=100, borderwidth=2)
-        self.lang_dir_browse_1 = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_OST_ext_dir)
-        self.OST_ext_save_to_label = tk.Label(self.canvas, text='Save OSTs to...', bg='white', padx=60)
-        self.OST_ext_save_to_entry = tk.Entry(self.canvas, width=100, borderwidth=2)
-        self.OST_ext_save_browse_butt = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_save_ext_OSTs)
+        self.OST_ext_label = tk.Label(self.canvas, text="Extract OSTs", bg='white', padx=int(self.fixed_w*0.02), font=self.header_1_font)
+        self.lang_dir_label_1 = tk.Label(self.canvas, text='Subtitle file(s) directory:', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.lang_dir_entry_1 = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.lang_dir_browse_1 = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_OST_ext_dir, font=self.button_font)
+        self.OST_ext_save_to_label = tk.Label(self.canvas, text='Save OSTs to...', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.OST_ext_save_to_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.OST_ext_save_browse_butt = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_save_ext_OSTs, font=self.button_font)
 
-        self.del_OSTs = tk.Checkbutton(self.canvas, text='Delete OSTs from files', variable=self.var_del_OSTs, bg='white')
-        self.save_OSTs = tk.Checkbutton(self.canvas, text='Save extracted OSTs', variable=self.var_save_OSTs, bg='white', command=save_OSTs_ext_check)
+        self.del_OSTs = tk.Checkbutton(self.canvas, text='Delete OSTs from files', variable=self.var_del_OSTs, bg='white', font=self.sub_header_font)
+        self.save_OSTs = tk.Checkbutton(self.canvas, text='Save extracted OSTs', variable=self.var_save_OSTs, bg='white', command=save_OSTs_ext_check, font=self.sub_header_font)
 
-        self.extract_OSTs_button = tk.Button(self.canvas, text='Extract', height=1, width=15, command=extract_OSTs)
+        self.extract_OSTs_button = tk.Button(self.canvas, text='Extract', height=1, width=15, command=extract_OSTs, font=self.button_font)
 
 
         # Merge with OSTs
         self.var_overwrite_merged_files = tk.IntVar()
 
-        self.OST_merge_label = tk.Label(self.canvas, text="Merge files and OSTs", bg='white', padx=30, font=self.header_1_font)
-        self.lang_dir_label_2 = tk.Label(self.canvas, text='Subtitle file(s) directory:', bg='white', padx=60)
-        self.lang_dir_entry_2 = tk.Entry(self.canvas, width=100, borderwidth=2)
-        self.lang_dir_browse_2 = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_sub_merge)
-        self.OST_dir_label = tk.Label(self.canvas, text='OST directory:', bg='white', padx=60)
-        self.OST_dir_entry = tk.Entry(self.canvas, width=100, borderwidth=2)
-        self.OST_dir_browse_butt = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_OST_merge)
-        self.save_to_label = tk.Label(self.canvas, text='Save merged files to...', bg='white', padx=60)
-        self.save_to_entry = tk.Entry(self.canvas, width=100, borderwidth=2)
-        self.save_to_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_merge_save)
-        self.overwrite_merged_files = tk.Checkbutton(self.canvas, text='Overwrite subtitle files', variable=self.var_overwrite_merged_files, bg='white', command=overwrite_sub_files)
-        self.merge_OSTs_button = tk.Button(self.canvas, text='Merge', height=1, width=15, command=merge_OSTs)
+        self.OST_merge_label = tk.Label(self.canvas, text="Merge files and OSTs", bg='white', padx=int(self.fixed_w*0.02), font=self.header_1_font)
+        self.lang_dir_label_2 = tk.Label(self.canvas, text='Subtitle file(s) directory:', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.lang_dir_entry_2 = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.lang_dir_browse_2 = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_sub_merge, font=self.button_font)
+        self.OST_dir_label = tk.Label(self.canvas, text='OST directory:', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.OST_dir_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.OST_dir_browse_butt = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_OST_merge, font=self.button_font)
+        self.save_to_label = tk.Label(self.canvas, text='Save merged files to...', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.save_to_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.save_to_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_dir_merge_save, font=self.button_font)
+        self.overwrite_merged_files = tk.Checkbutton(self.canvas, text='Overwrite subtitle files', variable=self.var_overwrite_merged_files, bg='white', command=overwrite_sub_files, font=self.sub_header_font)
+        self.merge_OSTs_button = tk.Button(self.canvas, text='Merge', height=1, width=15, command=merge_OSTs, font=self.button_font)
 
 
         # Generate OSTs
 
         self.var_single_audit_file = tk.IntVar()
 
-        self.OST_gen_label = tk.Label(self.canvas, text="Generate OSTs", bg='white', padx=30, font=self.header_1_font)
-        self.OST_audit_label = tk.Label(self.canvas, text='OST Audit file(s):', bg='white', padx=60)
+        self.OST_gen_label = tk.Label(self.canvas, text="Generate OSTs", bg='white', padx=int(self.fixed_w*0.02), font=self.header_1_font)
+        self.OST_audit_label = tk.Label(self.canvas, text='OST Audit file(s):', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
         # self.OST_audit_entry = tk.Entry(self.canvas, width=80, borderwidth=2)
-        self.OST_audit_entry = ScrolledText(self.canvas, bg='white', fg='black', width=75, height=4, borderwidth=2, wrap='none')
-        self.browse_audit_button = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_audit_files)
-        self.OST_gen_save_to_label = tk.Label(self.canvas, text="Save OSTs to...", bg='white', padx=60)
-        self.OST_gen_save_to_entry = tk.Entry(self.canvas, width=100, borderwidth=2)
-        self.OST_gen_save_browse_butt = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_gen_OST_save)
-        self.OST_gen_button = tk.Button(self.canvas, text='Generate', height=1, width=15, command=generate_OSTs)
-        self.single_audit_file = tk.Checkbutton(self.canvas, text='Single audit file', variable=self.var_single_audit_file, bg='white')
+        self.OST_audit_entry = ScrolledText(self.canvas, bg='white', fg='black', width=int(self.fixed_w*0.065), height=4, borderwidth=2, wrap='none', font=self.entry_font)
+        self.browse_audit_button = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_audit_files, font=self.button_font)
+        self.OST_gen_save_to_label = tk.Label(self.canvas, text="Save OSTs to...", bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.OST_gen_save_to_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.OST_gen_save_browse_butt = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_gen_OST_save, font=self.button_font)
+        self.OST_gen_button = tk.Button(self.canvas, text='Generate', height=1, width=15, command=generate_OSTs, font=self.button_font)
+        self.single_audit_file = tk.Checkbutton(self.canvas, text='Single audit file', variable=self.var_single_audit_file, bg='white', font=self.sub_header_font)
 
         self.OST_line_1 = ''
         self.OST_line_1_1 = ''
@@ -603,71 +637,71 @@ class App:
 
         # || QC widgets
 
-        self.QC_label = tk.Label(self.canvas, text='Batch Quality check', bg='white', padx=30, font=self.header_1_font)
-        self.files_label = tk.Label(self.canvas, text='Subtitle file(s)', bg='white', padx=60)
-        self.files_entry = tk.Entry(self.canvas, width=80, borderwidth=2)
-        self.files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_QC_sub_dir)
-        self.videos_label = tk.Label(self.canvas, text='Video(s)', bg='white', padx=60)
-        self.videos_entry = tk.Entry(self.canvas, width=80, borderwidth=2)
-        self.videos_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_QC_video_dir)
-        self.sc_label = tk.Label(self.canvas, text='Scene changes directory', bg='white', padx=60)
-        self.sc_entry = tk.Entry(self.canvas, width=80, borderwidth=2)
-        self.sc_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_SC_dir)
-        self.run_QC_button = tk.Button(self.canvas, text='Run QC', height=1, width=15, command=run_QC)
+        self.QC_label = tk.Label(self.canvas, text='Batch Quality check', bg='white', padx=int(self.fixed_w*0.02), font=self.header_1_font)
+        self.files_label = tk.Label(self.canvas, text='Subtitle file(s)', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.files_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.052), borderwidth=2, font=self.entry_font)
+        self.files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_QC_sub_dir, font=self.button_font)
+        self.videos_label = tk.Label(self.canvas, text='Video(s)', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.videos_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.052), borderwidth=2, font=self.entry_font)
+        self.videos_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_QC_video_dir, font=self.button_font)
+        self.sc_label = tk.Label(self.canvas, text='Scene changes directory', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.sc_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.052), borderwidth=2, font=self.entry_font)
+        self.sc_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_SC_dir, font=self.button_font)
+        self.run_QC_button = tk.Button(self.canvas, text='Run QC', height=1, width=15, command=run_QC, font=self.button_font)
 
         # QC settings
 
-        self.settings_label = tk.Label(self.canvas, text='QC settings', bg='white', padx=60, font=self.option_font)
-        self.CPS_label = tk.Label(self.canvas, text='Max. CPS', bg='white', padx=90)
+        self.settings_label = tk.Label(self.canvas, text='QC settings', bg='white', padx=int(self.fixed_w*0.04), font=self.option_font)
+        self.CPS_label = tk.Label(self.canvas, text='Max. CPS', bg='white', padx=int(self.fixed_w*0.06), font=self.sub_header_font)
         self.CPS_var = tk.StringVar()
         self.CPS_var.set('25.0')
         self.CPS_entry = tk.Spinbox(self.canvas, from_=0.00, to=99.00, format="%.2f", increment=0.1, textvariable=self.CPS_var, width=5, wrap=True)
         self.CPS_spaces_var = tk.IntVar()
-        self.CPS_check = tk.Checkbutton(self.canvas, text='Count spaces for CPS', variable=self.CPS_spaces_var, bg='white', padx=120)
-        self.CPL_label = tk.Label(self.canvas, text='Max. CPL', bg='white', padx=90)
+        self.CPS_check = tk.Checkbutton(self.canvas, text='Count spaces for CPS', variable=self.CPS_spaces_var, bg='white', padx=int(self.fixed_w*0.08), font=self.sub_header_font)
+        self.CPL_label = tk.Label(self.canvas, text='Max. CPL', bg='white', padx=int(self.fixed_w*0.06), font=self.sub_header_font)
         self.CPL_limit_var = tk.IntVar()
         self.CPL_limit_var.set('42')
         self.CPL_entry = tk.Spinbox(self.canvas, from_=0, to=100, textvariable=self.CPL_limit_var, width=5, wrap=True)
-        self.max_lines_label = tk.Label(self.canvas, text='Max. lines', bg='white', padx=90)
+        self.max_lines_label = tk.Label(self.canvas, text='Max. lines', bg='white', padx=int(self.fixed_w*0.06), font=self.sub_header_font)
         self.max_lines_var = tk.IntVar()
         self.max_lines_var.set('2')
         self.max_lines_entry = tk.Spinbox(self.canvas, from_=0, to=100, textvariable=self.max_lines_var, width=5, wrap=True)
-        self.min_duration_label = tk.Label(self.canvas, text='Min. duration (ms)', bg='white', padx=90)
+        self.min_duration_label = tk.Label(self.canvas, text='Min. duration (ms)', bg='white', padx=int(self.fixed_w*0.06), font=self.sub_header_font)
         self.min_duration_var = tk.IntVar()
         self.min_duration_var.set('833')
         self.min_duration_entry = tk.Spinbox(self.canvas, from_=0, to=100000, textvariable=self.min_duration_var, width=5, wrap=True)
-        self.max_duration_label = tk.Label(self.canvas, text='Max. duration (ms)', bg='white', padx=90)
+        self.max_duration_label = tk.Label(self.canvas, text='Max. duration (ms)', bg='white', padx=int(self.fixed_w*0.06), font=self.sub_header_font)
         self.max_duration_var = tk.IntVar()
         self.max_duration_var.set('7000')
         self.max_duration_entry = tk.Spinbox(self.canvas, from_=0, to=100000, textvariable=self.max_duration_var, width=5, wrap=True)
         self.ellipses_var = tk.IntVar()
         self.ellipses_var.set(1)
-        self.ellipsis_check = tk.Checkbutton(self.canvas, text='Check ellipses', variable=self.ellipses_var,bg='white')
+        self.ellipsis_check = tk.Checkbutton(self.canvas, text='Check ellipses', variable=self.ellipses_var,bg='white', font=self.sub_header_font)
         self.gaps_var = tk.IntVar()
         self.gaps_var.set(1)
-        self.gaps_check = tk.Checkbutton(self.canvas, text='Check gaps', variable=self.gaps_var, bg='white')
+        self.gaps_check = tk.Checkbutton(self.canvas, text='Check gaps', variable=self.gaps_var, bg='white', font=self.sub_header_font)
         self.shot_changes_var = tk.IntVar()
         self.shot_changes_var.set(1)
-        self.shot_changes_check = tk.Checkbutton(self.canvas, text='Check timing to shot changes', variable=self.shot_changes_var, bg='white')
+        self.shot_changes_check = tk.Checkbutton(self.canvas, text='Check timing to shot changes', variable=self.shot_changes_var, bg='white', font=self.sub_header_font)
         
 
         self.check_TCFOL_var = tk.IntVar()
         self.check_TCFOL_var.set(1)
-        self.TCFOL_check = tk.Checkbutton(self.canvas, text='Check text can fit in one line', variable=self.check_TCFOL_var, bg='white')
+        self.TCFOL_check = tk.Checkbutton(self.canvas, text='Check text can fit in one line', variable=self.check_TCFOL_var, bg='white', font=self.sub_header_font)
 
         self.check_OST_var = tk.IntVar()
         self.check_OST_var.set(1)
-        self.OST_check = tk.Checkbutton(self.canvas, text='Check OSTs', variable=self.check_OST_var, bg='white')
+        self.OST_check = tk.Checkbutton(self.canvas, text='Check OSTs', variable=self.check_OST_var, bg='white', font=self.sub_header_font)
 
         self.NF_glyph_list_var = tk.IntVar()
         self.NF_glyph_list_var.set(1)
-        self.check_NF_glyph_list = tk.Checkbutton(self.canvas, text='Check Netflix Glyph List', variable=self.NF_glyph_list_var, bg='white')
+        self.check_NF_glyph_list = tk.Checkbutton(self.canvas, text='Check Netflix Glyph List', variable=self.NF_glyph_list_var, bg='white', font=self.sub_header_font)
 
         self.save_report_var = tk.IntVar()
         # self.save_report_var.set(1)
-        self.save_report_check = tk.Checkbutton(self.canvas, text='Save report', variable=self.save_report_var, bg='white')
-        self.save_report_entry = tk.Entry(self.canvas, width=60, borderwidth=2)
-        self.save_report_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_report_save)
+        self.save_report_check = tk.Checkbutton(self.canvas, text='Save report', variable=self.save_report_var, bg='white', font=self.sub_header_font)
+        self.save_report_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.038), borderwidth=2, font=self.entry_font)
+        self.save_report_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_report_save, font=self.button_font)
 
         
 
@@ -677,18 +711,18 @@ class App:
 
         # || Issues widgets
 
-        self.gen_issue_sheet_label = tk.Label(self.canvas, text='Generate issue spreadsheet', bg='white', padx=30, font=self.header_1_font)
-        self.target_files_label = tk.Label(self.canvas, text='Target file(s)', bg='white', padx=60, font=self.sub_header_font)
-        self.target_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=110, height=6, borderwidth=2, wrap='none')
+        self.gen_issue_sheet_label = tk.Label(self.canvas, text='Generate issue spreadsheet', bg='white', padx=int(self.fixed_w*0.02), font=self.header_1_font)
+        self.target_files_label = tk.Label(self.canvas, text='Target file(s)', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.target_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=int(self.fixed_w*0.065), height=6, borderwidth=2, wrap='none', font=self.entry_font)
         # self.browse_tar_files_action = partial(browse_multiple_files, 'tar_files')
-        self.target_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_tar_path)
-        self.source_files_label = tk.Label(self.canvas, text='Source file(s)', bg='white', padx=60, font=self.sub_header_font)
-        self.source_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=110, height=6, borderwidth=2, wrap='none')
-        self.source_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_en_path)
-        self.save_spreadsheet_label = tk.Label(self.canvas, text='Save issue spreadsheet to...', bg='white', padx=60, font=self.sub_header_font)
-        self.issues_save_to_entry = tk.Entry(self.canvas, width=110, borderwidth=2)
-        self.issues_save_to_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=save_issue_sheet)
-        self.generate_excel_button = tk.Button(self.canvas, text='Generate', height=1, width=15, padx=30, command=gen_issue_sheet)
+        self.target_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_tar_path, font=self.button_font)
+        self.source_files_label = tk.Label(self.canvas, text='Source file(s)', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.source_files_field = ScrolledText(self.canvas, bg='white', fg='black', width=int(self.fixed_w*0.065), height=6, borderwidth=2, wrap='none', font=self.entry_font)
+        self.source_files_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=browse_en_path, font=self.button_font)
+        self.save_spreadsheet_label = tk.Label(self.canvas, text='Save issue spreadsheet to...', bg='white', padx=int(self.fixed_w*0.04), font=self.sub_header_font)
+        self.issues_save_to_entry = tk.Entry(self.canvas, width=int(self.fixed_w*0.065), borderwidth=2, font=self.entry_font)
+        self.issues_save_to_browse = tk.Button(self.canvas, text='Browse', height=1, width=15, command=save_issue_sheet, font=self.button_font)
+        self.generate_excel_button = tk.Button(self.canvas, text='Generate', height=1, width=15, padx=int(self.fixed_w*0.02), command=gen_issue_sheet, font=self.button_font)
         
         self.issues_line_1 = ''
 
@@ -698,17 +732,17 @@ class App:
 
         # Results
 
-        self.OST_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=30, font=self.results_font)
-        self.OST_results = ScrolledText(self.canvas, bg='white', fg='black')
+        self.OST_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=int(self.fixed_w*0.02), font=self.results_font)
+        self.OST_results = ScrolledText(self.canvas, bg='white', fg='black', font=self.results_content_font)
 
-        self.QC_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=30, font=self.results_font)
-        self.QC_results = ScrolledText(self.canvas, bg='white', fg='black')
+        self.QC_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=int(self.fixed_w*0.02), font=self.results_font)
+        self.QC_results = ScrolledText(self.canvas, bg='white', fg='black', font=self.results_content_font)
 
         # self.prefix_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=30, font=self.results_font)
         # self.prefix_results = ScrolledText(self.canvas, bg='white', fg='black')
 
-        self.issues_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=30, font=self.results_font)
-        self.issues_results = ScrolledText(self.canvas, bg='white', fg='black')
+        self.issues_results_label = tk.Label(self.canvas, text='Results', bg='white', padx=int(self.fixed_w*0.02), font=self.results_font)
+        self.issues_results = ScrolledText(self.canvas, bg='white', fg='black', font=self.results_content_font)
         # results.grid(column=0, columnspan=3, row=18, pady=25, padx=25, sticky='nsew')
         # results.insert('1.0', 'Test\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\n')
         # results.configure(state='disabled')
@@ -796,52 +830,52 @@ class App:
             self.canvas.grid_rowconfigure(20, weight=1)
 
             self.OST_button.config(bg='#4953ab')
-            self.del_OSTs.grid(column=3, row=3, sticky='w', padx=(30, 0))
+            self.del_OSTs.grid(column=3, row=3, sticky='w', padx=(int(self.fixed_w*0.02), 0))
         
         
-            self.save_OSTs.grid(column=3, row= 5, sticky='w', padx=(30, 0))
-            self.OST_ext_label.grid(column=0, row=1, sticky='w', pady=(15, 0))
-            self.lang_dir_label_1.grid(column=0, row=2, sticky='w', pady=(15, 0))
-            self.lang_dir_entry_1.grid(column=0, columnspan=2, row=3, sticky='w', padx=(60, 0))
-            self.lang_dir_browse_1.grid(column=2, row=3, padx=45)
+            self.save_OSTs.grid(column=3, row= 5, sticky='w', padx=(int(self.fixed_w*0.02), 0))
+            self.OST_ext_label.grid(column=0, row=1, sticky='w', pady=(int(self.fixed_h*0.017), 0))
+            self.lang_dir_label_1.grid(column=0, row=2, sticky='w', pady=(int(self.fixed_h*0.017), 0))
+            self.lang_dir_entry_1.grid(column=0, columnspan=2, row=3, sticky='w', padx=(int(self.fixed_w*0.04), 0))
+            self.lang_dir_browse_1.grid(column=2, row=3, padx=int(self.fixed_w*0.03))
             self.OST_ext_save_to_label.grid(column=0, row=4, sticky='w')
-            self.OST_ext_save_to_entry.grid(column=0, columnspan=2, row=5, sticky='w', padx=(60, 0))
+            self.OST_ext_save_to_entry.grid(column=0, columnspan=2, row=5, sticky='w', padx=(int(self.fixed_w*0.04), 0))
             self.OST_ext_save_to_entry.configure(state='disabled')
-            self.OST_ext_save_browse_butt.grid(column=2, row=5, padx=45)
-            self.extract_OSTs_button.grid(column=4, row=5, padx=30, sticky='s')
+            self.OST_ext_save_browse_butt.grid(column=2, row=5, padx=int(self.fixed_w*0.03))
+            self.extract_OSTs_button.grid(column=4, row=5, padx=int(self.fixed_w*0.02), sticky='s')
 
 
-            self.OST_merge_label.grid(column=0, row=6, sticky='w', pady=(40, 0))
-            self.lang_dir_label_2.grid(column=0, row=7, sticky='w', pady=(15, 0))
-            self.lang_dir_entry_2.grid(column=0, columnspan=2, row=8, sticky='w', padx=(60, 0))
+            self.OST_merge_label.grid(column=0, row=6, sticky='w', pady=(int(self.fixed_h*0.046), 0))
+            self.lang_dir_label_2.grid(column=0, row=7, sticky='w', pady=(int(self.fixed_w*0.017), 0))
+            self.lang_dir_entry_2.grid(column=0, columnspan=2, row=8, sticky='w', padx=(int(self.fixed_w*0.04), 0))
             self.lang_dir_entry_2.configure(state='disabled', disabledbackground='white')
-            self.lang_dir_browse_2.grid(column=2, row=8, padx=45)
+            self.lang_dir_browse_2.grid(column=2, row=8, padx=int(self.fixed_w*0.03))
             self.OST_dir_label.grid(column=0, row=9, sticky='w')
-            self.OST_dir_entry.grid(column=0, columnspan=2, row=10, sticky='w', padx=(60, 0))
+            self.OST_dir_entry.grid(column=0, columnspan=2, row=10, sticky='w', padx=(int(self.fixed_w*0.04), 0))
             self.OST_dir_entry.configure(state='disabled', disabledbackground='white')
-            self.OST_dir_browse_butt.grid(column=2, row=10, padx=45)
+            self.OST_dir_browse_butt.grid(column=2, row=10, padx=int(self.fixed_w*0.03))
             self.save_to_label.grid(column=0, row=11, sticky='w')
-            self.save_to_entry.grid(column=0, columnspan=2, row=12, sticky='w', padx=(60, 0))
+            self.save_to_entry.grid(column=0, columnspan=2, row=12, sticky='w', padx=(int(self.fixed_w*0.04), 0))
             self.save_to_entry.configure(state='disabled', disabledbackground='white')
-            self.save_to_browse.grid(column=2, row=12, padx=45)
-            self.overwrite_merged_files.grid(column=3, row=8, sticky='w', padx=(30, 0))
-            self.merge_OSTs_button.grid(column=4, row=12, padx=30, sticky='s')
+            self.save_to_browse.grid(column=2, row=12, padx=int(self.fixed_w*0.03))
+            self.overwrite_merged_files.grid(column=3, row=8, sticky='w', padx=(int(self.fixed_w*0.02), 0))
+            self.merge_OSTs_button.grid(column=4, row=12, padx=int(self.fixed_w*0.02), sticky='s')
 
 
-            self.OST_gen_label.grid(column=0, row=13, sticky='w', pady=(40, 0))
-            self.OST_audit_label.grid(column=0, row=14, sticky='w', pady=(15, 0))
-            self.OST_audit_entry.grid(column=0, columnspan=2, row=15, sticky='w', padx=(60, 0))
+            self.OST_gen_label.grid(column=0, row=13, sticky='w', pady=(int(self.fixed_h*0.046), 0))
+            self.OST_audit_label.grid(column=0, row=14, sticky='w', pady=(int(self.fixed_h*0.017), 0))
+            self.OST_audit_entry.grid(column=0, columnspan=2, row=15, sticky='w', padx=(int(self.fixed_w*0.04), 0))
             self.OST_audit_entry.configure(state='disabled')
-            self.browse_audit_button.grid(column=2, row=15, padx=45, sticky='s')
+            self.browse_audit_button.grid(column=2, row=15, padx=int(self.fixed_w*0.03), sticky='s')
             self.OST_gen_save_to_label.grid(column=0, row=16, sticky='w')
-            self.OST_gen_save_to_entry.grid(column=0, columnspan=2, row=17, sticky='w', padx=(60, 0))
+            self.OST_gen_save_to_entry.grid(column=0, columnspan=2, row=17, sticky='w', padx=(int(self.fixed_w*0.04), 0))
             self.OST_gen_save_to_entry.configure(state='disabled', disabledbackground='white')
-            self.OST_gen_save_browse_butt.grid(column=2, row=17, padx=45)
-            self.OST_gen_button.grid(column=4, row=17, padx=30, sticky='s')
-            self.single_audit_file.grid(column=3, row=15, sticky='w', padx=(30, 0))
+            self.OST_gen_save_browse_butt.grid(column=2, row=17, padx=int(self.fixed_w*0.03))
+            self.OST_gen_button.grid(column=4, row=17, padx=int(self.fixed_w*0.02), sticky='s')
+            self.single_audit_file.grid(column=3, row=15, sticky='w', padx=(int(self.fixed_w*0.02), 0))
 
-            self.OST_results_label.grid(column=0, row=19, sticky='w', pady=(30, 0))
-            self.OST_results.grid(column=0, columnspan=5, row=20, pady=30, padx=25, sticky='nsew')
+            self.OST_results_label.grid(column=0, row=19, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+            self.OST_results.grid(column=0, columnspan=5, row=20, pady=int(self.fixed_h*0.035), padx=int(self.fixed_w*0.016), sticky='nsew')
             self.OST_results.configure(state='disabled')
 
             self.lang_dir_entry_1.configure(state='disabled')
@@ -852,9 +886,23 @@ class App:
             # self.OST_line_2 = self.canvas.create_line(30, 230, 1400, 230, fill='black', width=1)
             # self.OST_line_3 = self.canvas.create_line(30, 457, 1400, 457, fill='black', width=1)
 
-            self.OST_line_1 = self.canvas.create_line(self.fixed_w*0.02, 50, self.fixed_w*0.88, 50, fill='black', width=1)
-            self.OST_line_2 = self.canvas.create_line(self.fixed_w*0.02, 230, self.fixed_w*0.88, 230, fill='black', width=1)
-            self.OST_line_3 = self.canvas.create_line(self.fixed_w*0.02, 457, self.fixed_w*0.88, 457, fill='black', width=1)
+            # self.OST_line_1 = self.canvas.create_line(self.fixed_w*0.02, 50, self.fixed_w*0.88, 50, fill='black', width=1)
+            # self.OST_line_2 = self.canvas.create_line(self.fixed_w*0.02, 230, self.fixed_w*0.88, 230, fill='black', width=1)
+            # self.OST_line_3 = self.canvas.create_line(self.fixed_w*0.02, 457, self.fixed_w*0.88, 457, fill='black', width=1)
+
+            self.OST_line_1 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.058), self.fixed_w*0.88, int(self.fixed_h*0.058), fill='black', width=1)
+            
+            if self.screen_h > 1000:
+                self.OST_line_2 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.267), self.fixed_w*0.88, int(self.fixed_h*0.267), fill='black', width=1)
+                self.OST_line_3 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.538), self.fixed_w*0.88, int(self.fixed_h*0.538), fill='black', width=1)
+
+            elif self.screen_h >= 900:
+                self.OST_line_2 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.276), self.fixed_w*0.88, int(self.fixed_h*0.276), fill='black', width=1)
+                self.OST_line_3 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.560), self.fixed_w*0.88, int(self.fixed_h*0.560), fill='black', width=1)
+
+            else:
+                self.OST_line_2 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.285), self.fixed_w*0.88, int(self.fixed_h*0.285), fill='black', width=1)
+                self.OST_line_3 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.575), self.fixed_w*0.88, int(self.fixed_h*0.575), fill='black', width=1)
 
 
 
@@ -1084,20 +1132,20 @@ class App:
                 self.canvas.delete(self.issues_line_1)
 
 
-                self.QC_label.grid(column=0, row=1, sticky='w', pady=(15, 0))
-                self.files_label.grid(column=0, row=2, sticky='w', pady=(25, 0))
-                self.files_entry.grid(column=0, columnspan=2, row=3, sticky='w', padx=60)
+                self.QC_label.grid(column=0, row=1, sticky='w', pady=(int(self.fixed_h*0.017), 0))
+                self.files_label.grid(column=0, row=2, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+                self.files_entry.grid(column=0, columnspan=2, row=3, sticky='w', padx=int(self.fixed_w*0.04))
                 self.files_browse.grid(column=2, row=3)
                 self.videos_label.grid(column=0, row=4, sticky='w')
-                self.videos_entry.grid(column=0, columnspan=2, row=5, sticky='w', padx=60)
+                self.videos_entry.grid(column=0, columnspan=2, row=5, sticky='w', padx=int(self.fixed_w*0.04))
                 self.videos_browse.grid(column=2, row=5)
                 self.sc_label.grid(column=0, row=6, sticky='w')
-                self.sc_entry.grid(column=0, columnspan=2, row=7, sticky='w', padx=60)
+                self.sc_entry.grid(column=0, columnspan=2, row=7, sticky='w', padx=int(self.fixed_w*0.04))
                 self.sc_browse.grid(column=2, row=7)
                 
-                self.settings_label.grid(column=0, row=8, sticky='w', pady=(25, 0))
-                self.CPS_label.grid(column=0, row=9, sticky='w', pady=(25, 0))
-                self.CPS_entry.grid(column=1, row=9, sticky='w', pady=(25, 0))
+                self.settings_label.grid(column=0, row=8, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+                self.CPS_label.grid(column=0, row=9, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+                self.CPS_entry.grid(column=1, row=9, sticky='w', pady=(int(self.fixed_h*0.029), 0))
                 self.CPS_check.grid(column=0, row=10, sticky='w')
                 self.CPL_label.grid(column=0, row=11, sticky='w')
                 self.CPL_entry.grid(column=1, row=11, sticky='w')
@@ -1107,29 +1155,38 @@ class App:
                 self.min_duration_entry.grid(column=1, row=13, sticky='w')
                 self.max_duration_label.grid(column=0, row=14, sticky='w')
                 self.max_duration_entry.grid(column=1, row=14, sticky='w')
-                self.ellipsis_check.grid(column=2, row=9, sticky='w', pady=(25, 0))
+                self.ellipsis_check.grid(column=2, row=9, sticky='w', pady=(int(self.fixed_h*0.029), 0))
                 self.gaps_check.grid(column=2, row=10, sticky='w')
                 self.shot_changes_check.grid(column=2, row=11, sticky='w')
                 self.TCFOL_check.grid(column=2, row=12, sticky='w')
                 self.OST_check.grid(column=2, row=13, sticky='w')
 
                 self.check_NF_glyph_list.grid(column=2, row=14, sticky='w')
-                self.save_report_check.grid(column=3, row=9, sticky='w', padx=(45, 0), pady=(25, 0))
-                self.save_report_entry.grid(column=3, row=10, sticky='w', padx=(45, 0))
-                self.save_report_browse.grid(column=4, row=10, sticky='w', padx=(25, 0))
+                self.save_report_check.grid(column=3, row=9, sticky='w', padx=(int(self.fixed_w*0.03), 0), pady=(int(self.fixed_h*0.029), 0))
+                self.save_report_entry.grid(column=3, row=10, sticky='ew', padx=(int(self.fixed_w*0.03), 0))
+                self.save_report_browse.grid(column=4, row=10, sticky='e', padx=(0, int(self.fixed_w*0.027)))
 
 
-                self.run_QC_button.grid(column=4, row=15)
+                self.run_QC_button.grid(column=4, row=15, sticky='e', padx=(0, int(self.fixed_w*0.027)))
 
-                self.QC_results_label.grid(column=0, row=18, sticky='w', pady=(45, 0))
-                self.QC_results.grid(column=0, columnspan=6, row=19, pady=25, padx=25, sticky='nsew')
+                self.QC_results_label.grid(column=0, row=18, sticky='w', pady=(int(self.fixed_h*0.052), 0))
+                self.QC_results.grid(column=0, columnspan=6, row=19, pady=int(self.fixed_h*0.029), padx=int(self.fixed_w*0.016), sticky='nsew')
                 self.QC_results.configure(state='disabled')
 
                 # self.QC_line_1 = self.canvas.create_line(30, 50, 1400, 50, fill='black', width=1)
                 # self.QC_line_2 = self.canvas.create_line(60, 265, 1400, 265, fill='black', width=1)
 
-                self.QC_line_1 = self.canvas.create_line(self.fixed_w*0.02, 50, self.fixed_w*0.88, 50, fill='black', width=1)
-                self.QC_line_2 = self.canvas.create_line(self.fixed_w*0.04, 265, self.fixed_w*0.88, 265, fill='black', width=1)
+                if self.screen_h > 1000:
+                    self.QC_line_1 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.058), self.fixed_w*0.88, int(self.fixed_h*0.058), fill='black', width=1)
+                    self.QC_line_2 = self.canvas.create_line(self.fixed_w*0.04, int(self.fixed_h*0.311), self.fixed_w*0.88, int(self.fixed_h*0.311), fill='black', width=1)
+
+                elif self.screen_h >= 900:
+                    self.QC_line_1 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.058), self.fixed_w*0.88, int(self.fixed_h*0.058), fill='black', width=1)
+                    self.QC_line_2 = self.canvas.create_line(self.fixed_w*0.04, int(self.fixed_h*0.314), self.fixed_w*0.88, int(self.fixed_h*0.314), fill='black', width=1)
+
+                else:
+                    self.QC_line_1 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.058), self.fixed_w*0.88, int(self.fixed_h*0.058), fill='black', width=1)
+                    self.QC_line_2 = self.canvas.create_line(self.fixed_w*0.04, int(self.fixed_h*0.317), self.fixed_w*0.88, int(self.fixed_h*0.317), fill='black', width=1)
 
 
                 # self.QC_rect_1 = round_rectangle(30, 60, 1400, 225, outline='black', fill='white')
@@ -1272,26 +1329,26 @@ class App:
                 self.canvas.delete(self.QC_line_1)
                 self.canvas.delete(self.QC_line_2)
 
-                self.gen_issue_sheet_label.grid(column=0, row=1, sticky='w', pady=(15, 0))
-                self.target_files_label.grid(column=0, row=2, sticky='w', pady=(25, 0))
-                self.target_files_field.grid(column=0, columnspan=2, row=3, pady=(15, 0), padx=60, sticky='nsew')
+                self.gen_issue_sheet_label.grid(column=0, row=1, sticky='w', pady=(int(self.fixed_h*0.017), 0))
+                self.target_files_label.grid(column=0, row=2, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+                self.target_files_field.grid(column=0, columnspan=2, row=3, pady=(int(self.fixed_h*0.017), 0), padx=int(self.fixed_w*0.04), sticky='nsew')
                 self.target_files_browse.grid(column=2, row=3, sticky='sw')
-                self.source_files_label.grid(column=0, row=4, sticky='w', pady=(25, 0))
-                self.source_files_field.grid(column=0, columnspan=2, row=5, pady=(15, 0), padx=60, sticky='nsew')
+                self.source_files_label.grid(column=0, row=4, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+                self.source_files_field.grid(column=0, columnspan=2, row=5, pady=(int(self.fixed_h*0.017), 0), padx=int(self.fixed_w*0.04), sticky='nsew')
                 self.source_files_browse.grid(column=2, row=5, sticky='sw')
-                self.save_spreadsheet_label.grid(column=0, row=6, sticky='w', pady=(25, 0))
-                self.issues_save_to_entry.grid(column=0, columnspan=2, row=7, padx=60, pady=(15, 0), sticky='nsew')
+                self.save_spreadsheet_label.grid(column=0, row=6, sticky='w', pady=(int(self.fixed_h*0.029), 0))
+                self.issues_save_to_entry.grid(column=0, columnspan=2, row=7, padx=int(self.fixed_w*0.04), pady=(int(self.fixed_h*0.017), 0), sticky='nsew')
                 self.issues_save_to_browse.grid(column=2, row=7, sticky='sw')
                 self.generate_excel_button.grid(column=3, row=7, sticky='s')
                 
                 # self.issues_results_label.grid(column=0, row=8, sticky='w', pady=(30, 0))
-                self.issues_results_label.grid(column=0, row=9, sticky='w', pady=(30, 0))
-                self.issues_results.grid(column=0, columnspan=4, row=10, pady=25, padx=25, sticky='nsew')
+                self.issues_results_label.grid(column=0, row=9, sticky='w', pady=(int(self.fixed_h*0.035), 0))
+                self.issues_results.grid(column=0, columnspan=4, row=10, pady=int(self.fixed_h*0.029), padx=int(self.fixed_w*0.016), sticky='nsew')
                 # self.results.insert('1.0', 'Test\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\nTest\n')
                 self.issues_results.configure(state='disabled')
 
                 # self.issues_line_1 = self.canvas.create_line(30, 50, 1400, 50, fill='black', width=1)
-                self.issues_line_1 = self.canvas.create_line(self.fixed_w*0.02, 50, self.fixed_w*0.88, 50, fill='black', width=1)
+                self.issues_line_1 = self.canvas.create_line(self.fixed_w*0.02, int(self.fixed_h*0.058), self.fixed_w*0.88, int(self.fixed_h*0.058), fill='black', width=1)
                 
 
 
