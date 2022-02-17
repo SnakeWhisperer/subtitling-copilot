@@ -1,4 +1,6 @@
 *.pyc
-dist
+/build
+/dist
+/exes
 *.7z
 __pycache__
