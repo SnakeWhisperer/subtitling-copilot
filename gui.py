@@ -95,7 +95,7 @@ class Window(LayoutLineWidget):
         super().__init__()
         self.setStyleSheet('''
             Window {
-                background: #1c1c1c;
+                background: #202021;
             }
 
             QLabel#welcome {
@@ -121,7 +121,7 @@ class Window(LayoutLineWidget):
 
 
             QLabel#header {
-                background: #2a2a2b;
+                background: #353436;
                 qproperty-alignment: AlignVCenter;
                 font-size: 20pt;
                 padding-left: 10px;
@@ -160,7 +160,7 @@ class Window(LayoutLineWidget):
             }
 
             QPushButton#option {
-                background: #1c1c1c;
+                background: #202021;
                 color: #c5cad4;
                 border: none;
                 border-radius: 5px;
@@ -219,12 +219,13 @@ class Window(LayoutLineWidget):
             }
 
             QLineEdit#report_field {
+                background: #1c1b1c;
                 margin-left: 80px;
             }
 
             QSpinBox, QDoubleSpinBox {
                 border: 1px solid rgba(167, 202, 212, 80);
-                background: #1c1c1c;
+                background: #1c1b1c;
                 color: #c5cad4;
             }
 
@@ -238,7 +239,7 @@ class Window(LayoutLineWidget):
 
 
             QListWidget {
-                background-color: #1c1c1c;
+                background-color: #1c1b1c;
                 color: #c5cad4;
             }
             
@@ -251,7 +252,7 @@ class Window(LayoutLineWidget):
             QTabBar::tab {
                 height: 30px;
                 width: 100px;
-                background-color: #1c1c1c;
+                background-color: #202021;
                 padding-bottom: 10px;
                 margin: 0px;
                 color: #c5cad4;
@@ -270,7 +271,7 @@ class Window(LayoutLineWidget):
             }
 
             QTabWidget::pane {
-                background-color: #1c1c1c;
+                background-color: #202021;
                 border-top: 1px solid rgba(167, 202, 212, 80);
                 margin-top: -2px;
             }
@@ -285,15 +286,18 @@ class Window(LayoutLineWidget):
             }
             
             QLineEdit {
-                background-color: #1c1c1c;
+                background-color: #1c1b1c;
                 border: 1px solid rgba(167, 202, 212, 80);
+                border-radius: 2px;
                 color: #c5cad4;
             }
 
             QPlainTextEdit {
+                font-size: 9pt;
+                font-family: "Lucida Console";
                 border: 1px solid rgba(167, 202, 212, 80);
                 border-radius: 3px;
-                background-color: #1c1c1c;
+                background-color: #1c1b1c;
                 margin-top: 5em;
                 color: #c5cad4;
                 
@@ -965,11 +969,17 @@ class Window(LayoutLineWidget):
         self.fr_gen_videos_layout.addWidget(self.fr_gen_videos_browse, 0, QtCore.Qt.AlignBottom)
 
         self.run_fr_button = QPushButton('Run', objectName='run')
-        self.fr_layout.addWidget(self.run_fr_button, 0, QtCore.Qt.AlignRight)
+        self.run_fr_layout = QHBoxLayout()
+        self.run_fr_layout.setContentsMargins(0, 15, 0, 0)
+        self.fr_layout.addLayout(self.run_fr_layout)
+        self.run_fr_layout.addWidget(self.run_fr_button, 0, QtCore.Qt.AlignRight)
+    
 
         self.fr_gen_messages = QPlainTextEdit()
         self.fr_gen_messages.setReadOnly(True)
         self.fr_layout.addWidget(self.fr_gen_messages)
+        
+        
 
 
 
@@ -985,11 +995,16 @@ class Window(LayoutLineWidget):
         self.stats_files_layout.addWidget(self.stats_files_browse, 0, QtCore.Qt.AlignBottom)
 
         self.run_stats_button = QPushButton('Run', objectName='run')
-        self.stats_layout.addWidget(self.run_stats_button, 0, QtCore.Qt.AlignRight)
+        self.run_stats_layout = QHBoxLayout()
+        self.run_stats_layout.setContentsMargins(0, 15, 0, 0)
+        self.stats_layout.addLayout(self.run_stats_layout)
+        self.run_stats_layout.addWidget(self.run_stats_button, 0, QtCore.Qt.AlignRight)
 
         self.stats_gen_messages = QPlainTextEdit()
         self.stats_gen_messages.setReadOnly(True)
         self.stats_layout.addWidget(self.stats_gen_messages)
+
+        
 
 
 
@@ -1025,7 +1040,7 @@ class Window(LayoutLineWidget):
 
         self.inactive_opt_button_ss = '''
                 *{
-                    background: #1c1c1c;
+                    background: #202021;
                     color: #c5cad4;
                     border: none;
                     border-radius: 5px;
@@ -1967,7 +1982,7 @@ class Window(LayoutLineWidget):
             for i, j in zip(self.gen_fr_videos_list_send, frame_rates):
                 hyphens = '-' * (distance - len(i) - 2)
 
-                text += f'{i} {hyphens} {j} fps\n'
+                text += f'{i} {hyphens} {format(j, ".3f")} fps\n\n'
 
 
             self.fr_gen_messages.setPlainText(text)
