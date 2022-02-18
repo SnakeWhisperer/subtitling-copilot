@@ -2,6 +2,7 @@ import os, shutil, re, ffmpeg# cv2
 
 from reader import read_text_file, hash_file
 from classes import Timecode, WebVTT
+from decoders import parse_VTT
 
 
 def fps_check(file_name):
@@ -41,6 +42,16 @@ def get_frame_rate(video):
 
     return fps
 
+
+def batch_get_frame_rates_gui(videos_list):
+    frame_rates = []
+
+    for video in videos_list:
+        frame_rates.append(get_frame_rate(video))
+
+    return frame_rates
+
+
 def batch_get_frame_rates(directory):
     original_dir = os.getcwd()
     os.chdir(directory)
@@ -78,6 +89,7 @@ def get_scene_names(directory):
     return scene_name_list
 
 
+
 def copy_scene_changes(videos_dir, source_dir, target_dir):
     original_dir = os.getcwd()
 
@@ -90,30 +102,71 @@ def copy_scene_changes(videos_dir, source_dir, target_dir):
         shutil.copyfile(original, target)
 
 
+def copy_scene_changes_from_list(videos_list, source_dir, target_dir):
+    original_dir = os.getcwd()
 
-def batch_generate_scene_changes(path):
+    for name in videos_list:
+        scene_name = hash_file(name)
+        original = source_dir + '\\' + scene_name + '.scenechanges'
+        target = target_dir + '\\' + scene_name + '.scenechanges'
+        shutil.copyfile(original, target)
+
+
+
+def batch_generate_scene_changes(path, dest_path, sens):
     """
     """
 
     original_path = os.getcwd()
-    os.chdir(path)
-    files = os.listdir()
 
-    if not os.path.exists('scene_changes'):
-        os.mkdir('scene_changes')
+    if type(path) == str:    
+        os.chdir(path)
+        files = os.listdir()
+
+        if not os.path.exists('scene_changes'):
+         os.mkdir('scene_changes')
+    elif type(path) == list:
+        files = path
 
     for file_name in files:
         name, extension = os.path.splitext(file_name)
 
         if extension == '.mp4':
-            generate_scene_changes(file_name, path)
+            generate_scene_changes_gui(file_name, dest_path, sens)
 
     os.chdir(original_path)
 
     return
 
+def generate_scene_changes_gui(file_name, directory, sens):
 
-def generate_scene_changes(file_name, directory):
+    name, extension = os.path.splitext(file_name)
+    hash_name = hash_file(file_name)
+
+    if extension == '.mp4':
+        os.system(
+            f'ffmpeg -i "{file_name}"'
+            f' -filter:v "select=\'gt(scene, {sens})\', showinfo"'
+            f' -f null - 2> "{name}.txt"'
+        )
+
+        scene_list = read_text_file(f'{name}.txt')
+        scene_times = []
+
+        for i in range(len(scene_list)):
+            if re.search('n:\s*\d+ ', scene_list[i]) is not None:
+                time = re.search('pts_time:\d+\.*\d*', scene_list[i]).group()
+                scene_times.append(re.search('\d+\.*\d*', time).group())
+
+        with open(f'{directory}/{hash_name}.scenechanges', 'w', encoding='utf-8-sig') as scenes_file:
+            for line in scene_times:
+                scenes_file.write(line)
+                scenes_file.write('\n')
+
+        os.remove(f'{name}.txt')
+
+
+def generate_scene_changes(file_name, directory, sens, name_list=True):
     """
     Generates scene changes with FFMPEG, running it in the command line.
     This is for one video only, and the .txt file is saved
@@ -126,15 +179,16 @@ def generate_scene_changes(file_name, directory):
     """
 
     original_path = os.getcwd()
-    os.chdir(directory)
 
     illegal_found = False
 
     # Create the 'scene_changes' directory if it doesn't exist.
-    if not os.path.exists('scene_changes'):
-        os.mkdir('scene_changes')
+    if not name_list:
+        os.chdir(directory)
+        if not os.path.exists('scene_changes'):
+            os.mkdir('scene_changes')
 
-    os.chdir(directory + '\\scene_changes')
+        os.chdir(directory + '\\scene_changes')
 
     # NOTE: These replacements can be done with a regular expression
     illegal_chars = ['#', '%', '&', '{', '}', '\\', '<', '>', '*', "?", '/',
@@ -142,13 +196,16 @@ def generate_scene_changes(file_name, directory):
 
     # File name without the extension and extension.
     name, extension = os.path.splitext(file_name)
-    print(directory + '\\' + file_name)
-    hash_name = hash_file(directory + '\\' + file_name)
+    if not name_list:
+        print(directory + '\\' + file_name)
+        hash_name = hash_file(directory + '\\' + file_name)
+    else:
+        hash_name = hash_file(file_name)
 
-    if name + '.scenechanges' in os.listdir():
-        print('File "' + name + '.scenechanges" already exists in the "scene_changes" directory.')
-        os.chdir(original_path)
-        return
+    # if name + '.scenechanges' in os.listdir():
+    #     print('File "' + name + '.scenechanges" already exists in the "scene_changes" directory.')
+    #     os.chdir(original_path)
+    #     return
     
     os.chdir(original_path) 
 
@@ -181,9 +238,14 @@ def generate_scene_changes(file_name, directory):
         # NOTE: Find a way to wrap the long line.
         if not os.path.exists(name_for_terminal + '.txt'):
             os.system(
-                'ffmpeg -i '+ name_for_terminal + extension
-                + ' -filter:v "select=\'gt(scene, 0.05)\', showinfo" -f null - 2> '
-                + name_for_terminal + '.txt'
+                f'ffmpeg -i {name_for_terminal}{extension}'
+                f' -filter:v "select=\'gt(scene, {sens})\', showinfo'
+                f' -f null - 2> {name_for_terminal}.txt'
+
+
+                # 'ffmpeg -i '+ name_for_terminal + extension
+                # + ' -filter:v "select=\'gt(scene, 0.05)\', showinfo" -f null - 2> '
+                # + name_for_terminal + '.txt'
             )
 
         # If the file name was changed to work
@@ -191,8 +253,9 @@ def generate_scene_changes(file_name, directory):
         if illegal_found:
             # If the .txt file with the original file name
             # does not exist, rename it with it.  
-            if not os.path.exists(name + 'txt'):
-                os.rename(name_for_terminal + '.txt', name + '.txt')
+            
+            # if not os.path.exists(name + 'txt'):
+            #     os.rename(name_for_terminal + '.txt', name + '.txt')
 
             # Delete copy of the video that was created.
             os.remove(name_for_terminal + extension)
@@ -241,3 +304,53 @@ def generate_scene_changes(file_name, directory):
     return
 
 
+def batch_get_stats(file_list):
+    total_words_final = 0
+    total_CPS_final = 0
+    total_CPS_final_ns = 0
+
+    for file_name in file_list:
+        total_words, total_CPS, total_CPS_ns = get_stats(file_name)
+        total_words_final += total_words
+        total_CPS_final += total_CPS
+        total_CPS_final_ns += total_CPS_ns
+
+    total_CPS_final = total_CPS_final / len(file_list)
+    total_CPS_final_ns = total_CPS_final_ns / len(file_list)
+
+    stats = {
+        'Total words': total_words_final,
+        'Total CPS': format(total_CPS_final, '.2f'),
+        'Total CPS (without spaces)': format(total_CPS_final_ns, '.2f')
+    }
+
+    return stats
+
+
+
+def get_stats(file_name):
+    subs = parse_VTT(file_name)['cues']
+
+    total_words = 0
+    total_CPS = 0
+    total_CPS_ns = 0
+
+    for sub in subs:
+        total_words += len(re.findall("\w+", ' '.join(sub.untagged_text)))
+        total_CPS += sub.CPS
+        total_CPS_ns += sub.CPS_ns
+    
+    total_CPS = total_CPS / len(subs)
+    total_CPS_ns = total_CPS_ns / len(subs)
+
+    stats = {
+        'Total words': total_words,
+        'Total CPS': total_CPS,
+        'Total CPS (without spaces)': total_CPS_ns
+    }
+
+    print(file_name)
+    print(stats)
+    print('\n\n')
+
+    return (total_words, total_CPS, total_CPS_ns)

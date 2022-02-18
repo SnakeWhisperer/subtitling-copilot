@@ -11,9 +11,11 @@ from PyQt5.QtGui import QColor, QPicture, QPainter, QIcon
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QRect, QPoint, QEvent
 
-from mc_helper import batch_gen_CPS_sheet, batch_extract_OSTs, get_OSTs_single, get_OSTs
+from mc_helper import batch_gen_CPS_sheet, batch_extract_OSTs, get_OSTs_single, get_OSTs, check_OST_audit
 from vtt_handler import batch_merge_subs
 from checks import batch_quality_check
+from utils import (copy_scene_changes_from_list, batch_generate_scene_changes,
+                   batch_get_frame_rates_gui, batch_get_stats)
 
 class LayoutLineWidget(QWidget):
     _borderColor = QColor(167, 202, 212, 80)
@@ -253,7 +255,8 @@ class Window(LayoutLineWidget):
                 padding-bottom: 10px;
                 margin: 0px;
                 color: #c5cad4;
-                font-size: 12pt;
+                font-family: "Arial";
+                font-size: 11pt;
             }
 
 
@@ -263,6 +266,7 @@ class Window(LayoutLineWidget):
 
             QTabBar::tab:selected {
                 border-bottom: 4px solid #2c4ac9;
+                font-weight: bold;
             }
 
             QTabWidget::pane {
@@ -354,8 +358,8 @@ class Window(LayoutLineWidget):
         self.opt_2_page_cont = QWidget(objectName='Option-2-tabs')
         self.opt_3_page_cont = QWidget(objectName='Option-3-tabs')
         # self.opt_4_page_cont = QTabWidget(objectName='Option-4-tabs')
-        self.opt_4_page_cont = QTabWidget(objectName='Option-5-tabs')
-        self.opt_5_page_cont = QTabWidget(objectName='option_6_tabs')
+        self.opt_4_page_cont = QWidget(objectName='Option-4-tabs')
+        self.opt_5_page_cont = QTabWidget(objectName='option_5_tabs')
 
         self.welcome_layout = QVBoxLayout(self.welcome_widget)
         self.welcome_message = QLabel('Welcome to Subtitling Copilot', objectName='welcome')
@@ -553,58 +557,86 @@ class Window(LayoutLineWidget):
         self.qc_setts_layout = QGridLayout()
         self.qc_layout_1.addLayout(self.qc_setts_layout)
         self.max_cps_label = QLabel('Max. CPS')
-        self.qc_setts_layout.addWidget(self.max_cps_label, 0, 0)
         self.max_cps_spin = QDoubleSpinBox()
         self.max_cps_spin.setDecimals(2)
         self.max_cps_spin.setSingleStep(0.1)
         self.max_cps_spin.setValue(25.00)
-        self.qc_setts_layout.addWidget(self.max_cps_spin, 0, 1)
         self.cps_spaces_checkbox = QCheckBox(
             'CPS include spaces',
             objectName='cps_spaces'
         )
-        self.qc_setts_layout.addWidget(self.cps_spaces_checkbox, 1, 0, 1, 1)
+        
         self.max_cpl_label = QLabel('Max. CPL')
-        self.qc_setts_layout.addWidget(self.max_cpl_label, 2, 0)
         self.max_cpl_spin = QSpinBox()
         self.max_cpl_spin.setValue(42)
         self.max_cpl_spin.setMinimum(1)
-        self.qc_setts_layout.addWidget(self.max_cpl_spin, 2, 1)
         self.max_lines_label = QLabel('Max. lines')
-        self.qc_setts_layout.addWidget(self.max_lines_label, 3, 0)
         self.max_lines_spin = QSpinBox()
         self.max_lines_spin.setValue(2)
         self.max_lines_spin.setMinimum(1)
-        self.qc_setts_layout.addWidget(self.max_lines_spin, 3, 1)
         self.min_duration_label = QLabel('Min. duration (ms)')
-        self.qc_setts_layout.addWidget(self.min_duration_label, 4, 0)
         self.min_duration_spin = QSpinBox()
         self.min_duration_spin.setRange(0, 10000)
         self.min_duration_spin.setValue(833)
-        self.qc_setts_layout.addWidget(self.min_duration_spin, 4, 1)
         self.max_duration_label = QLabel('Max. duration (ms)')
-        self.qc_setts_layout.addWidget(self.max_duration_label, 5, 0)
         self.max_duration_spin = QSpinBox()
         self.max_duration_spin.setRange(1000, 100000000)
         self.max_duration_spin.setValue(7000)
+        
+
+
+        self.qc_setts_layout.addWidget(self.max_cps_label, 0, 0)
+        self.qc_setts_layout.addWidget(self.max_cps_spin, 0, 1)
+        self.qc_setts_layout.addWidget(self.cps_spaces_checkbox, 1, 0, 1, 1)
+        self.qc_setts_layout.addWidget(self.max_cpl_label, 2, 0)
+        self.qc_setts_layout.addWidget(self.max_cpl_spin, 2, 1)
+        self.qc_setts_layout.addWidget(self.max_lines_label, 3, 0)
+        self.qc_setts_layout.addWidget(self.max_lines_spin, 3, 1)
+        self.qc_setts_layout.addWidget(self.min_duration_label, 4, 0)
+        self.qc_setts_layout.addWidget(self.min_duration_spin, 4, 1)
+        self.qc_setts_layout.addWidget(self.max_duration_label, 5, 0)
         self.qc_setts_layout.addWidget(self.max_duration_spin, 5, 1)
 
-        self.check_ellipses_checkbox = QCheckBox('Check ellipses', objectName='sett_check')
+
+
+
+
+
+
+        self.check_ellipses_checkbox = QCheckBox(
+            'Check ellipses',
+            objectName='sett_check'
+        )
         self.check_ellipses_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_ellipses_checkbox, 0, 2)
-        self.check_gaps_checkbox = QCheckBox('Check gaps', objectName='sett_check')
+        self.check_gaps_checkbox = QCheckBox(
+            'Check gaps',
+            objectName='sett_check'
+        )
         self.check_gaps_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_gaps_checkbox, 1, 2)
-        self.check_sc_checkbox = QCheckBox('Check timing to shot changes', objectName='sett_check')
+        self.check_sc_checkbox = QCheckBox(
+            'Check timing to shot changes',
+            objectName='sett_check'
+        )
         self.check_sc_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_sc_checkbox, 2, 2)
-        self.check_TCFOL_checkbox = QCheckBox('Check text can fit in one line', objectName='sett_check')
+        self.check_TCFOL_checkbox = QCheckBox(
+            'Check text can fit in one line',
+            objectName='sett_check'
+        )
         self.check_TCFOL_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_TCFOL_checkbox, 3, 2)
-        self.check_OST_checkbox = QCheckBox('Check OSTs', objectName='sett_check')
+        self.check_OST_checkbox = QCheckBox(
+            'Check OSTs',
+            objectName='sett_check'
+        )
         self.check_OST_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_OST_checkbox, 4, 2)
-        self.check_NFG_checkbox = QCheckBox('Check Netflix Glyph List', objectName='sett_check')
+        self.check_NFG_checkbox = QCheckBox(
+            'Check Netflix Glyph List',
+            objectName='sett_check'
+        )
         self.check_NFG_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_NFG_checkbox, 5, 2)
 
@@ -618,8 +650,8 @@ class Window(LayoutLineWidget):
         self.qc_setts_layout.setColumnStretch(0, 0)
         self.qc_setts_layout.setColumnStretch(1, 0)
         self.qc_setts_layout.setColumnStretch(2, 0)
-        self.qc_setts_layout.setColumnStretch(3, 20)
-        self.qc_setts_layout.setColumnStretch(4, 19)
+        self.qc_setts_layout.setColumnStretch(3, 150)
+        self.qc_setts_layout.setColumnStretch(4, 200)
         self.qc_setts_layout.setColumnStretch(5, 0)
         self.qc_setts_layout.setColumnMinimumWidth(1, 55)
 
@@ -680,7 +712,8 @@ class Window(LayoutLineWidget):
 
         self.fixes_layout = QVBoxLayout(self.opt_4_page_cont)
 
-        self.fixes_files_label = QLabel('Subtitle Files Directory', objectName='sub_title')
+        self.fixes_files_label = QLabel('Subtitle Files Directory', objectName='bold_label')
+        self.fixes_files_label.setContentsMargins(0, 10, 0, 0)
         self.fixes_layout.addWidget(self.fixes_files_label)
         self.add_fixes_files_layout = QHBoxLayout()
         self.fixes_layout.addLayout(self.add_fixes_files_layout)
@@ -691,7 +724,8 @@ class Window(LayoutLineWidget):
         self.add_fixes_files_layout.addWidget(self.browse_fixes_files)
         self.add_fixes_files_layout.addStretch()
 
-        self.fixes_videos_label = QLabel('Video Files Directory', objectName='sub_title')
+        self.fixes_videos_label = QLabel('Video Files Directory', objectName='bold_label')
+        self.fixes_videos_label.setContentsMargins(0, 10, 0, 0)
         self.fixes_layout.addWidget(self.fixes_videos_label)
         self.add_fixes_videos_layout = QHBoxLayout()
         self.fixes_layout.addLayout(self.add_fixes_videos_layout)
@@ -702,7 +736,8 @@ class Window(LayoutLineWidget):
         self.add_fixes_videos_layout.addWidget(self.browse_fixes_videos)
         self.add_fixes_videos_layout.addStretch()
 
-        self.fixes_sc_label = QLabel('Scene Changes Directory', objectName='sub_title')
+        self.fixes_sc_label = QLabel('Scene Changes Directory', objectName='bold_label')
+        self.fixes_sc_label.setContentsMargins(0, 10, 0, 0)
         self.fixes_layout.addWidget(self.fixes_sc_label)
         self.add_fixes_sc_layout = QHBoxLayout()
         self.fixes_layout.addLayout(self.add_fixes_sc_layout)
@@ -719,25 +754,52 @@ class Window(LayoutLineWidget):
         self.fixes_setts_layout = QGridLayout()
         self.fixes_layout.addLayout(self.fixes_setts_layout, 0)
 
-        self.snap_to_frames_checkbox = QCheckBox('Snap times to frames (Recommended)', objectName='fix_sett_check')
-        self.fix_TCFOL_checkbox = QCheckBox('Fix "text can fit in one line"', objectName='fix_sett_check')
-        self.fix_TCFOL_label = QLabel('Shorter than', objectName='fix_spin_label')
+        self.snap_to_frames_checkbox = QCheckBox(
+            'Snap times to frames (Recommended)',
+            objectName='fix_sett_check'
+        )
+        self.fix_TCFOL_checkbox = QCheckBox(
+            'Fix "text can fit in one line"',
+            objectName='fix_sett_check'
+        )
+        self.fix_TCFOL_label = QLabel(
+            'Shorter than',
+            objectName='fix_spin_label'
+        )
         self.unbreak_limit_spin = QSpinBox(objectName='fix_spin')
         self.unbreak_limit_spin.setValue(42)
         self.unbreak_limit_spin.setMinimum(1)
-        self.close_gaps_checkbox = QCheckBox('Close gaps', objectName='fix_sett_check')
-        self.apply_min_gaps_checkbox = QCheckBox('Apply minimum gaps', objectName='fix_sett_check')
-        self.min_gap_label = QLabel('Minimum gap (frames)', objectName='fix_spin_label')
+        self.close_gaps_checkbox = QCheckBox(
+            'Close gaps',
+            objectName='fix_sett_check'
+        )
+        self.apply_min_gaps_checkbox = QCheckBox(
+            'Apply minimum gaps',
+            objectName='fix_sett_check'
+        )
+        self.min_gap_label = QLabel(
+            'Minimum gap (frames)',
+            objectName='fix_spin_label'
+        )
         self.min_gap = QSpinBox(objectName='fix_spin')
         self.min_gap.setValue(2)
         self.min_gap.setMinimum(0)
-        self.invalid_italics_checkbox = QCheckBox('Fix invalid italic tags', objectName='fix_sett_check')
-        self.unused_br_checkbox = QCheckBox('Fixed unused line breaks', objectName='fix_sett_check')
-        self.empty_subs_checkbox = QCheckBox('Flag empty subtitles', objectName='fix_sett_check')
-        self.sort_subs_checkbox = QCheckBox('Sort by start time', objectName='fix_sett_check')
-        self.empty_widget = QWidget()
-        self.run_fixes_button = QPushButton('Run Fixes', objectName='run')
-        self.fixes_messages = QPlainTextEdit()
+        self.invalid_italics_checkbox = QCheckBox(
+            'Fix invalid italic tags',
+            objectName='fix_sett_check'
+        )
+        self.unused_br_checkbox = QCheckBox(
+            'Fixed unused line breaks',
+            objectName='fix_sett_check'
+        )
+        self.empty_subs_checkbox = QCheckBox(
+            'Flag empty subtitles',
+            objectName='fix_sett_check'
+        )
+        self.sort_subs_checkbox = QCheckBox(
+            'Sort by start time',
+            objectName='fix_sett_check'
+        )       
 
 
 
@@ -753,32 +815,19 @@ class Window(LayoutLineWidget):
         self.fixes_setts_layout.addWidget(self.unused_br_checkbox, 7, 0)
         self.fixes_setts_layout.addWidget(self.empty_subs_checkbox, 8, 0)
         self.fixes_setts_layout.addWidget(self.sort_subs_checkbox, 9, 0)
-        self.fixes_setts_layout.addWidget(self.empty_widget, 10, 0)
-        
-        self.fixes_layout.addWidget(self.run_fixes_button, 0, QtCore.Qt.AlignRight)
-        self.fixes_layout.addWidget(self.fixes_messages)
-
 
         self.fixes_setts_layout.setColumnStretch(0, 0)
         self.fixes_setts_layout.setColumnStretch(1, 0)
         self.fixes_setts_layout.setColumnStretch(2, 1)
         self.fixes_setts_layout.setColumnMinimumWidth(1, 75)
+        
+        self.run_fixes_button = QPushButton('Run Fixes', objectName='run')
+        self.fixes_messages = QPlainTextEdit()
+        self.fixes_messages.setReadOnly(True)
 
-        self.fixes_setts_layout.setRowStretch(0, 0)
-        self.fixes_setts_layout.setRowStretch(1, 0)
-        self.fixes_setts_layout.setRowStretch(2, 0)
-        self.fixes_setts_layout.setRowStretch(3, 0)
-        self.fixes_setts_layout.setRowStretch(4, 0)
-        self.fixes_setts_layout.setRowStretch(5, 0)
-        self.fixes_setts_layout.setRowStretch(6, 0)
-        self.fixes_setts_layout.setRowStretch(7, 0)
-        self.fixes_setts_layout.setRowStretch(8, 0)
-        self.fixes_setts_layout.setRowStretch(9, 0)
-        self.fixes_setts_layout.setRowStretch(10, 100)
-
-        for i in range(10):
-            self.fixes_setts_layout.setRowMinimumHeight(i, 100)
-
+        self.fixes_layout.addWidget(self.run_fixes_button, 0, QtCore.Qt.AlignRight)
+        self.fixes_layout.addWidget(self.fixes_messages, 1)
+        self.fixes_layout.addStretch()
 
         
 
@@ -884,7 +933,7 @@ class Window(LayoutLineWidget):
 
         self.sc_gen_sens_layout = QHBoxLayout()
         self.sc_gen_layout.addLayout(self.sc_gen_sens_layout)
-        self.sc_gen_sens_label = QLabel('Sensitivity')
+        self.sc_gen_sens_label = QLabel('Sensitivity', objectName='bold_label')
         self.sc_gen_sens_layout.addWidget(self.sc_gen_sens_label)
         self.sc_gen_sens = QDoubleSpinBox()
         self.sc_gen_sens.setDecimals(2)
@@ -1112,7 +1161,7 @@ class Window(LayoutLineWidget):
         self.setMinimumWidth(rect.width())
         self.setMinimumHeight(rect.height())
 
-
+        self.setWindowTitle('Subtitling Copilot')
 
 
 
@@ -1191,6 +1240,11 @@ class Window(LayoutLineWidget):
 
         if self.content.currentIndex() == 1:
             if self.content.currentWidget().currentIndex() == 0:
+
+                if file_names:
+                    self.file_list_1.clear()
+                    self.extract_ost_files_list = []
+
                 for i, file_name in enumerate(file_names):
                     self.extract_ost_files_list.append(file_name)
 
@@ -1199,6 +1253,11 @@ class Window(LayoutLineWidget):
                     self.file_list_1.insertItem(i, current_item)
 
             elif self.content.currentWidget().currentIndex() == 1:
+
+                if file_names:
+                    self.file_list_2.clear()
+                    self.merge_subtitle_files_list = []
+
                 for i, file_name in enumerate(file_names):
                     self.merge_subtitle_files_list.append(file_name)
 
@@ -1214,6 +1273,11 @@ class Window(LayoutLineWidget):
             pass
 
         elif self.content.currentIndex() == 3:
+
+            if file_names:
+                self.target_files_list.clear()
+                self.issues_tar_list = []
+
             for i, file_name in enumerate(file_names):
                 self.issues_tar_list.append(file_name)
 
@@ -1235,6 +1299,10 @@ class Window(LayoutLineWidget):
                 pass
 
             elif self.content.currentWidget().currentIndex() == 3:
+                if file_names:
+                    self.stats_files_list.clear()
+                    self.stats_files_list_send = []
+
                 for i, file_name in enumerate(file_names):
                     self.stats_files_list_send.append(file_name)
 
@@ -1258,6 +1326,10 @@ class Window(LayoutLineWidget):
                 pass
 
             elif self.content.currentWidget().currentIndex() == 1:
+                if file_names:
+                    self.file_list_3.clear()
+                    self.merge_ost_files_list = []
+
                 for i, file_name in enumerate(file_names):
                     self.merge_ost_files_list.append(file_name)
                     current_item = QListWidgetItem()
@@ -1271,6 +1343,10 @@ class Window(LayoutLineWidget):
             pass
 
         elif self.content.currentIndex() == 3:
+            if file_names:
+                self.source_files_list.clear()
+                self.issues_en_list = []
+
             for i, file_name in enumerate(file_names):
                 self.issues_en_list.append(file_name)
 
@@ -1306,6 +1382,10 @@ class Window(LayoutLineWidget):
             '*.docx'
         )
 
+        if file_names:
+            self.file_list_4.clear()
+            self.ost_audit_files_list = []
+
         for i, file_name in enumerate(file_names):
             self.ost_audit_files_list.append(file_name)
 
@@ -1324,6 +1404,10 @@ class Window(LayoutLineWidget):
 
         if self.content.currentIndex() == 5:
             if self.content.currentWidget().currentIndex() == 0:
+                if file_names:
+                    self.copy_sc_videos_list.clear()
+                    self.copy_sc_videos_list_send = []
+
                 for i, file_name in enumerate(file_names):
                     self.copy_sc_videos_list_send.append(file_name)
                     current_item = QListWidgetItem()
@@ -1331,6 +1415,10 @@ class Window(LayoutLineWidget):
                     self.copy_sc_videos_list.insertItem(i, current_item)
             
             elif self.content.currentWidget().currentIndex() == 1:
+                if file_names:
+                    self.gen_sc_videos_list.clear()
+                    self.gen_sc_videos_list_send = []
+
                 for i, file_name in enumerate(file_names):
                     self.gen_sc_videos_list_send.append(file_name)
                     current_item = QListWidgetItem()
@@ -1338,6 +1426,10 @@ class Window(LayoutLineWidget):
                     self.gen_sc_videos_list.insertItem(i, current_item)
 
             elif self.content.currentWidget().currentIndex() == 2:
+                if file_names:
+                    self.gen_fr_videos_list.clear()
+                    self.gen_fr_videos_list_send = []
+
                 for i, file_name in enumerate(file_names):
                     self.gen_fr_videos_list_send.append(file_name)
                     current_item = QListWidgetItem()
@@ -1359,11 +1451,13 @@ class Window(LayoutLineWidget):
 
         if self.content.currentIndex() == 4:
             self.fixes_files_dir = directory
+            self.fixes_files_list.clear()
             self.fixes_files_list.insert(self.fixes_files_dir)
 
         if self.content.currentIndex() == 5:
             if self.content.currentWidget().currentIndex() == 0:
                 self.copy_sc_source_dir = directory
+                self.sc_dir_entry.clear()
                 self.sc_dir_entry.insert(self.copy_sc_source_dir)
 
 
@@ -1380,11 +1474,13 @@ class Window(LayoutLineWidget):
 
         if self.content.currentIndex() == 4:
             self.fixes_videos_dir = directory
+            self.fixes_videos_list.clear()
             self.fixes_videos_list.insert(self.fixes_videos_dir)
 
         elif self.content.currentIndex() == 5:
             if self.content.currentWidget().currentIndex() == 0:
                 self.copy_sc_dest_dir = directory
+                self.sc_copy_to_entry.clear()
                 self.sc_copy_to_entry.insert(self.copy_sc_dest_dir)
 
     def browse_dir_3(self, event):
@@ -1400,6 +1496,7 @@ class Window(LayoutLineWidget):
 
         if self.content.currentIndex() == 4:
             self.fixes_sc_dir = directory
+            self.fixes_sc_list.clear()
             self.fixes_sc_list.insert(self.fixes_sc_dir)
 
 
@@ -1423,14 +1520,17 @@ class Window(LayoutLineWidget):
         if self.content.currentIndex() == 1:
             if self.content.currentWidget().currentIndex() == 0:
                 self.save_extracted_ost_dir = save_dir
+                self.save_edit.clear()
                 self.save_edit.insert(self.save_extracted_ost_dir)
 
             elif self.content.currentWidget().currentIndex() == 1:
                 self.save_merged_ost_dir = save_dir
+                self.save_edit_1.clear()
                 self.save_edit_1.insert(self.save_merged_ost_dir)
 
             elif self.content.currentWidget().currentIndex() == 2:
                 self.save_gen_ost_dir = save_dir
+                self.save_edit_2.clear()
                 self.save_edit_2.insert(self.save_gen_ost_dir)
 
         elif self.content.currentIndex() == 2:
@@ -1448,6 +1548,7 @@ class Window(LayoutLineWidget):
 
             elif self.content.currentWidget().currentIndex() == 1:
                 self.gen_sc_save_dir = save_dir
+                self.sc_gen_dir_entry.clear()
                 self.sc_gen_dir_entry.insert(self.gen_sc_save_dir)
 
             elif self.content.currentWidget().currentIndex() == 2:
@@ -1467,6 +1568,7 @@ class Window(LayoutLineWidget):
         )
 
         self.qc_files_dir = directory
+        self.qc_files_list.clear()
         self.qc_files_list.insert(self.qc_files_dir)
 
     
@@ -1480,6 +1582,7 @@ class Window(LayoutLineWidget):
         )
 
         self.qc_videos_dir = directory
+        self.qc_videos_list.clear()
         self.qc_videos_list.insert(self.qc_videos_dir)
     
     def browse_qc_sc_dir_call(self, event):
@@ -1492,6 +1595,7 @@ class Window(LayoutLineWidget):
         )
 
         self.qc_sc_dir_send = directory
+        self.qc_sc_list.clear()
         self.qc_sc_list.insert(self.qc_sc_dir_send)
 
 
@@ -1507,6 +1611,7 @@ class Window(LayoutLineWidget):
 
         if self.content.currentIndex() == 2:
             self.qc_report_name = file_name
+            self.save_report_entry.clear()
             self.save_report_entry.insert(self.qc_report_name)
 
 
@@ -1521,6 +1626,7 @@ class Window(LayoutLineWidget):
         print(file_name)
 
         self.issues_sheet_name = file_name
+        self.save_sheet_entry.clear()
         self.save_sheet_entry.insert(self.issues_sheet_name)
     
     def extract_ost(self, event):
@@ -1616,13 +1722,46 @@ class Window(LayoutLineWidget):
             self.gen_ost_errors += 'ERROR: Cannot generate OSTs. Please select a directory to save the generated OSTs.\n'
 
         if not self.gen_ost_errors:
-            text = 'Generating OSTs files from...\n'
+            # text = 'Generating OSTs files from...\n'
+            # for file_name in self.ost_audit_files_list:
+            #     text += '\n'
+            #     text += file_name
+            # text += '\n\n'
+            # text += 'Saving to...\n'
+            # text += self.save_gen_ost_dir
+            # self.generation_messages.setPlainText(text)
+
+            single_files = []
+            multi_files = []
+
             for file_name in self.ost_audit_files_list:
-                text += '\n'
-                text += file_name
-            text += '\n\n'
-            text += 'Saving to...\n'
-            text += self.save_gen_ost_dir
+                if check_OST_audit(file_name):
+                    single_files.append(file_name)
+                else:
+                    multi_files.append(file_name)
+
+            success = False
+
+            print(single_files)
+            print(multi_files)
+
+            if single_files and multi_files:
+                pass
+            elif single_files:
+                for file_name in single_files:
+                    get_OSTs_single(file_name, self.save_gen_ost_dir)
+                success = True
+                single_files = []
+            elif multi_files:
+                get_OSTs(multi_files    , self.save_gen_ost_dir)
+                success = True
+                multi_files = []
+
+            self.ost_audit_files_list = []
+
+            if success:
+                text = 'OSTs generated successfully'
+
             self.generation_messages.setPlainText(text)
         else:
             self.generation_messages.setPlainText(self.gen_ost_errors)
@@ -1637,37 +1776,56 @@ class Window(LayoutLineWidget):
             self.qc_errors += 'ERROR: Cannot run quality check. Please select a directory for the scene changes.\n'
         if not self.qc_report_name and self.save_report_checkbox.isChecked():
             self.qc_errors += 'ERROR: Cannot save quality check report. Please select a file name to save it.\n'
-        print(self.save_report_checkbox.isChecked())
-
 
         if not self.qc_errors:
-            text = 'Running quality check for files in directory...\n'
-            text += self.qc_files_dir + '\n\n'
-            text += 'With videos in directory...\n'
-            text += self.qc_videos_dir + '\n\n'
-            text += 'And scene changes in...\n'
-            text += self.qc_sc_dir_send + '\n\n'            
-            text += 'And saving report to...\n'
-            text += self.qc_report_name
+            text = 'Running quality check...\n'
+            print(text)
+            
+            # NOTE: For some reason this is not working.
             self.qc_messages.setPlainText(text)
 
+            cps_limit = self.max_cps_spin.value()
             cps_spaces = self.cps_spaces_checkbox.isChecked()
+            cpl_limit = self.max_cpl_spin.value()
+            max_lines = self.max_lines_spin.value()
+            min_duration = self.min_duration_spin.value()/1000
+            max_duration = self.max_duration_spin.value()/1000
             ellipses = self.check_ellipses_checkbox.isChecked()
             gaps = self.check_gaps_checkbox.isChecked()
             shot_changes = self.check_sc_checkbox.isChecked()
             tcfol = self.check_TCFOL_checkbox.isChecked()
             ost = self.check_OST_checkbox.isChecked()
             nfgl = self.check_NFG_checkbox.isChecked()
+            report = self.save_report_checkbox.isChecked()
+            report_name = self.qc_report_name
 
-            print(cps_spaces)
-            print(ellipses)
-            print(gaps)
-            print(shot_changes)
-            print(tcfol)
-            print(ost)
-            print(nfgl)
+            report = batch_quality_check(
+                self.qc_files_dir,
+                self.qc_videos_dir,
+                self.qc_sc_dir_send,
+                shot_changes=shot_changes,
+                CPS=True,
+                CPS_limit=cps_limit,
+                CPS_spaces=cps_spaces,
+                CPL=True,
+                CPL_limit=cpl_limit,
+                max_lines=max_lines,
+                min_duration=min_duration,
+                max_duration=max_duration,
+                ellipses=ellipses,
+                gaps=gaps,
+                glyphs=False,
+                old=False,
+                check_TCFOL=tcfol,
+                report=report,
+                report_name=report_name
+            )
+            print('Quality check DONE')
+
+            self.qc_messages.setPlainText('\n'.join(report))
             
         else:
+            
             self.qc_messages.setPlainText(self.qc_errors)
             self.qc_errors = ''
 
@@ -1725,7 +1883,7 @@ class Window(LayoutLineWidget):
             self.copy_sc_errors += 'ERROR: Cannot copy shot changes. Please specify the destination directory for the shot changes file(s).\n'
 
         if not self.copy_sc_errors:
-            text = 'Copying shot changes files for videos...\n'
+            text = 'Copied shot changes files for videos...\n'
             for file_name in self.copy_sc_videos_list_send:
                 text += '\n'
                 text += file_name
@@ -1734,6 +1892,13 @@ class Window(LayoutLineWidget):
             text += '\n\n'
             text += 'To directory...\n'
             text += self.copy_sc_dest_dir
+
+            copy_scene_changes_from_list(
+                self.copy_sc_videos_list_send,
+                self.copy_sc_source_dir,
+                self.copy_sc_dest_dir
+            )
+
             self.sc_copy_messages.setPlainText(text)
         else:
             self.sc_copy_messages.setPlainText(self.copy_sc_errors)
@@ -1754,6 +1919,13 @@ class Window(LayoutLineWidget):
             text += '\n\n'
             text += 'And saving to directory...\n'
             text += self.gen_sc_save_dir
+
+            batch_generate_scene_changes(
+                self.gen_sc_videos_list_send,
+                self.gen_sc_save_dir,
+                self.sc_gen_sens.value()
+            )
+
             self.sc_gen_messages.setPlainText(text)
         else:
             self.sc_gen_messages.setPlainText(self.gen_sc_errors)
@@ -1766,24 +1938,61 @@ class Window(LayoutLineWidget):
 
 
         if not self.gen_fr_errors:
-            text = 'Getting frame rates for videos...\n'
-            for file_name in self.gen_fr_videos_list_send:
-                text += '\n'
-                text += file_name
+            # text = 'Getting frame rates for videos...\n'
+            # for file_name in self.gen_fr_videos_list_send:
+            #     text += '\n'
+            #     text += file_name
+
+            longest_name = 0
+
+            for m in range(1, len(self.gen_fr_videos_list_send)):
+                print(self.gen_fr_videos_list_send[m])
+                print(len(self.gen_fr_videos_list_send[m]))
+                print('\n\n')
+                if (len(self.gen_fr_videos_list_send[m]) > longest_name):
+                    #
+                    longest_name = len(self.gen_fr_videos_list_send[m])
+
+            print(longest_name)
+
+            distance = longest_name + 17
+                        
+
+            frame_rates = batch_get_frame_rates_gui(
+                self.gen_fr_videos_list_send
+            )
+
+            text = ''
+
+            for i, j in zip(self.gen_fr_videos_list_send, frame_rates):
+                hyphens = '-' * (distance - len(i) - 2)
+
+                text += f'{i} {hyphens} {j} fps\n'
+
+
             self.fr_gen_messages.setPlainText(text)
         else:
             self.fr_gen_messages.setPlainText(self.gen_fr_errors)
             self.gen_fr_errors = ''
+
+
 
     def get_stats(self, event):
         if not self.stats_files_list_send:
             self.get_stats_errors += 'ERROR: Cannot get stats. Please select at least one subtitle file.\n'
         
         if not self.get_stats_errors:
-            text = 'Getting stats for files...\n'
-            for file_name in self.stats_files_list_send:
-                text += '\n'
-                text += file_name
+            text = ''
+            # text = 'Getting stats for files...\n'
+            # for file_name in self.stats_files_list_send:
+            #     text += '\n'
+            #     text += file_name
+
+            stats = batch_get_stats(self.stats_files_list_send)
+
+            for key in stats.keys():
+                text += f'{key}: {stats[key]}\n'
+            
             self.stats_gen_messages.setPlainText(text)
         else:
             self.stats_gen_messages.setPlainText(self.get_stats_errors)

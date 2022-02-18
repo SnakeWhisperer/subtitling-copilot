@@ -1586,7 +1586,21 @@ def count_CPS(directory, CPS_limit=25):
         print(counter)
         print('\n\n')
 
-    
+
+def check_OST_audit(file_name):
+    doc = docx.Document(file_name)
+
+    paragraph_counter = 1
+    single_file = True
+     
+    while paragraph_counter <= 2:
+        if re.search('\s*\d+:\d*\s*$', doc.paragraphs[paragraph_counter-1].text):
+            single_file = False
+        
+        paragraph_counter += 1
+
+    return single_file
+
 
 
 def get_OSTs(directory, save_OSTs_dir, files=True):
