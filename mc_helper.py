@@ -1,12 +1,16 @@
-import re, os, xlsxwriter, srt_handler, copy, docx
+import re, os, xlsxwriter, srt_handler, copy, docx, ffmpeg
 
-from decoders import decode_VTT, parse_VTT, VTT_text_parser
+from decoders import decode_VTT, parse_VTT, VTT_text_parser, parse_SRT
 from reader import read_text_file
 from classes import Timecode, WebVTT
 from exceptions import FormatError
 from encoders import encode_VTT
-from srt_handler import renumber
+from srt_handler import renumber, save_SRT_subs
 from vtt_handler import save_VTT_subs
+from utils import video_duration
+from difflib import SequenceMatcher
+
+from natsort import os_sorted
 
 
 def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
@@ -1848,3 +1852,185 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
         save_VTT_subs(OST_name, {'regions': [], 'styles': [], 'cues': OSTs})
 
 
+def check_CPS(directory):
+    
+    original_dir = os.getcwd()
+
+    os.chdir(directory)
+    files = os.listdir()
+
+    for file_name in files:
+        subs = parse_SRT(file_name)
+        print('-------------\n\n')
+        printed = False
+        for sub in subs:
+            if sub.CPS_ns > 20:
+                if not printed:
+                    print(file_name)
+                    print('\n\n')
+                    printed = True
+
+                print(sub.CPS_ns)
+                print(sub)
+                print('\n')
+
+    os.chdir(original_dir)
+
+
+def clone_SRT(file_name):
+    subs = parse_SRT(file_name)
+    name, ext = os.path.splitext(file_name)
+
+    save_SRT_subs(f'{name}__Clone{ext}', subs)
+
+
+def find_OST(directory):
+    original_dir = os.getcwd()
+
+    os.chdir(directory)
+
+    all_files = os.listdir()
+
+    sub_files = []
+
+    for file_name in all_files:
+        name, ext = os.path.splitext(file_name)
+        if ext == '.srt':
+            # print('\n\n')
+            # print(file_name)
+            sub_files.append(file_name)
+            subs = parse_SRT(file_name)
+            for sub in subs:
+                if re.search('^\[', sub.text):
+                    curr_text  = sub.text.replace('\n', ' ')
+                    print(curr_text)
+
+
+    os.chdir(original_dir)
+
+
+
+def duration_sheet(directory):
+
+    original_dir = os.getcwd()
+
+    os.chdir(directory)
+
+    all_items = os.listdir()
+
+    video_files = []
+
+    for item in all_items:
+        name, ext = os.path.splitext(item)
+
+        if ext == '.mp4':
+            video_files.append(item)
+
+
+    workbook = xlsxwriter.Workbook('Videos.xlsx')
+    worksheet = workbook.add_worksheet(name)
+    worksheet.set_column(0, 0, 70)
+    worksheet.set_column(1, 1, 22)
+
+    header_format = workbook.add_format({
+        'bold': 1,
+        'underline': 1,
+        'font_color': '#963634',
+        'font_size': 12
+
+    })
+
+    header_2_format = workbook.add_format({
+        'border': 1,
+        'bold': 1,
+        'font_size': 11,
+        'font_color': '#963634',
+        'bg_color': '#D9D9D9'
+    })
+
+    header_2_1_format = workbook.add_format({
+        'border': 1,
+        'bold': 1,
+        'font_size': 11,
+        'font_color': '#963634',
+        'bg_color': '#D9D9D9',
+        'align': 'center'
+    })
+
+    total_format = workbook.add_format({
+        'bold': 1,
+        'border': 1,
+        'bg_color': '#D9D9D9',
+        'align': 'right'
+    })
+
+    row_format = workbook.add_format({'border': 1})
+    row_duration_format = workbook.add_format({'border': 1, 'align': 'right'})
+
+    worksheet.write(0, 0, 'X-Series - YouTube videos - ', header_format)
+    worksheet.write(2, 0, 'VIDEOS', header_2_format)
+    worksheet.write(2, 1, 'MINUTES', header_2_1_format)
+
+    total_duration = 0
+
+    video_files = os_sorted(video_files)
+
+    for i, video in enumerate(video_files):
+        duration = video_duration(video)
+        worksheet.write(3+i, 0, video, row_format)
+        worksheet.write(3+i, 1, duration[1], row_duration_format)
+        total_duration += duration[0]
+
+    total_duration = Timecode(total_duration)
+
+    worksheet.write(3+i+1, 0, 'TOTAL', header_2_format)
+    worksheet.write(3+i+1, 1, total_duration.__str__()[:8], total_format)
+
+    os.chdir(original_dir)
+
+    workbook.close()
+
+
+def find_similarity(video_dir, file_dir):
+    original_dir = os.getcwd()
+
+    os.chdir(video_dir)
+
+    video_list = []
+
+    for i, name in enumerate(os.listdir()):
+        v_name, ext = os.path.splitext(name)
+
+        if ext == '.mp4':
+            video_list.append(name)
+
+    os.chdir(file_dir)
+
+    sub_list = []
+
+    for i, name in enumerate(os.listdir()):
+        s_name, ext = os.path.splitext(name)
+
+        if ext == '.vtt':
+            sub_list.append(name)
+
+    
+    workbook = xlsxwriter.Workbook('Similarities.xlsx')
+    worksheet = workbook.add_worksheet()
+    bold_format = workbook.add_format({'bold': 1})
+    highest_format = workbook.add_format('bg_color': 'red')
+
+    row_counter = 1
+    for i, s_name in enumerate(sub_list):
+        worksheet.write(row_counter, 1, s_name, bold_format)
+        row_counter += 1
+        for j, v_name in enumerate(video_list):
+            worksheet.write(row_counter, 1, v_name)
+            similarity = SequenceMatcher(None, s_name, v_name).ratio()
+            worksheet.write(row_counter, 2, similarity)
+            row_counter += 1
+
+
+    os.chdir(original_dir)
+    
+    workbook.close()

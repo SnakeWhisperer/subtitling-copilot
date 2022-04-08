@@ -24,3 +24,28 @@ def renumber(subtitles):
         counter += 1
 
     return
+
+
+def convert_to_JSON(subtitles):
+    """_summary_
+
+    Parameters
+    ----------
+    subtitles : _type_
+        _description_
+    """
+
+    out_string = '[\n'
+
+    for i, sub in enumerate(subtitles):
+        current_json = sub.to_JSON().split('\n')
+        for j, line in enumerate(current_json):
+            if j == len(current_json) - 1 and i < len(subtitles) - 1:
+                final_comma = ','
+            else:
+                final_comma = ''
+            out_string += f'\t{line}{final_comma}\n'
+
+    out_string += ']'
+
+    return out_string

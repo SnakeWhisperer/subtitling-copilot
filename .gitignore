@@ -3,4 +3,9 @@
 /dist
 /exes
 *.7z
+*.srt
+*.vtt
+*.json
+*.xlsx
+*.mp4
 __pycache__

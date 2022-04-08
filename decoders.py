@@ -7,7 +7,7 @@ from xml.dom import minidom
 from reader import read_text_file
 from classes import (Timecode, Subtitle, WebVTT, WebVTTRegion,
                      insert_tags, SRT, TTML, TTMLRegion, TTMLStyle,
-                     StartTag, EndTag, TimestampTag)
+                     StartTag, EndTag, TimestampTag, SRTStartTag, SRTEndTag)
 
 from exceptions import FormatError
 
@@ -59,6 +59,8 @@ def decode_SRT(file_list, frame_rate=24):
     broken_seq = False
     warnings = []
     text = []
+
+    file_list = read_text_file(file_list)
 
     for i in range(len(file_list)):
         
@@ -270,6 +272,263 @@ def decode_SRT(file_list, frame_rate=24):
         print('Non-continuous sequence\n\n')    
 
     return subtitles
+
+
+def parse_SRT(file_name, frame_rate=24):
+
+    file_list = read_text_file(file_name)
+    file_list = ''.join(file_list)
+
+    file_list = file_list.split('\n')
+
+    seen_cue = False
+    cues = []
+    cue_count = 1
+
+    index = 0
+
+    while index < len(file_list):
+        cue, index, seen_cue, cue_count = collect_SRT_cue(file_list, index, seen_cue, cue_count, frame_rate)
+
+        if cue:
+            cues.append(cue)
+
+    
+    return cues
+
+
+def collect_SRT_cue(file_list, index, seen_cue, cue_count, frame_rate):
+    
+    seen_arrow = False
+    line_count = 0
+    buffer = ''
+
+    cue = None
+
+    block_lines = []
+
+    while True:
+
+        line_count +=1
+        if index >= len(file_list):
+            break
+        
+        if '-->' in file_list[index] and not seen_arrow:
+            # if line_count == 2 and not seen_arrow:
+            seen_arrow = True
+            cue_number = buffer
+            timings = collect_SRT_timings(file_list[index], frame_rate)
+
+            if timings:
+                start_time = timings[0]
+                end_time = timings[1]
+                buffer = ''
+                seen_cue = True
+                cue = True
+                index += 1
+
+            # else:
+            #     break
+
+        elif not file_list[index]:
+            index += 1
+            break
+
+        else:
+            # if buffer:
+            #     buffer += '\n'
+
+            if seen_arrow:
+                if buffer:
+                    buffer += '\n'
+                buffer += file_list[index]
+
+            elif not seen_arrow and re.search('^\s*\d+\s*$', file_list[index]):
+                buffer += file_list[index]
+            else:
+                index += 1
+                break
+            
+            index += 1
+            # buffer += file_list[index]
+            
+
+    if cue is not None:
+        tokenized_text, cue_text, untagged_text, errors = SRT_text_parser(buffer)
+
+        cue = Subtitle(
+            cue_count,
+            cue_text,
+            tokenized_text,
+            untagged_text,
+            start_time,
+            end_time
+        )
+
+        cue_count += 1
+
+        return cue, index, seen_cue, cue_count
+    
+    else:
+        return None, index, seen_cue, cue_count
+
+
+def collect_SRT_timings(string, frame_rate=24):
+    timestamp_match = re.search(
+        '^\s*(\d\d:\d\d:\d\d,\d\d\d)'
+        '\s*-->\s*(\d\d:\d\d:\d\d,\d\d\d)', string)
+
+    if timestamp_match:
+        try:
+            start_time = Timecode(
+                timestamp_match.group(1),
+                frame_rate=frame_rate
+            )
+            end_time = Timecode(
+                timestamp_match.group(2),
+                frame_rate=frame_rate
+            )
+
+        except:
+            return None
+
+    else:
+        return None
+
+    return start_time, end_time
+
+
+def SRT_text_parser(cue_text):
+    position = 0
+    result = []
+    print_result = []
+    text_result = ''
+    open_order = []
+
+    current = None
+
+    errors = []
+
+    while True:
+        if position >= len(cue_text):
+            return(result, ''.join(print_result), text_result.split('\n'), errors)
+        token, position = SRT_text_tokenizer(cue_text, position)
+
+        if type(token) == str:
+            result.append(token)
+            # print_result.append(html.escape(token, quote=False))
+            print_result.append(token)
+            text_result += token
+        elif type(token) == SRTStartTag:
+            if not token.valid:
+                errors.append(f'Invalid start tag ({token.token_string}). '
+                              f'These characters will be interpreted as text')
+                text_result += token.token_string
+            elif not token.closed:
+                errors.append(f'Invalid start tag ({token.token_string}). '
+                              f'The tag has no closing bracket. '
+                              f'Will be interpreted as text')
+                text_result += token.token_string
+
+            elif token.name in open_order:
+                errors.append(f'Invalid start tag ({token.token_string}). '
+                              f'Already open.')
+
+            else:
+                open_order.append(token.name)
+
+            result.append(token)
+            print_result.append(token.token_string)
+
+        elif type(token) == SRTEndTag:
+            if token.valid and token.closed:
+                if (open_order and token.name in open_order
+                    and token.name == open_order[-1]):
+                    open_order.pop(-1)
+                else:
+                    errors.append(f'Invalid end tag ({token.token_string}). '
+                                  f'This tag is not open at this point. '
+                                  f'Will be kept by the parser '
+                                  f'but ignored by players.')
+            elif not token.valid:
+                errors.append(f'Invalid end tag ({token.token_string}). '
+                              f'These characters will be interpreted as text.')
+                text_result += token.token_string
+            elif not token.closed:
+                errors.append(f'Invalid end tag ({token.token_string}). '
+                              f'The tag has no closing bracket. '
+                              f'Will be intepreted as text.')
+                text_result += token.token_string
+
+            print_result.append(token.token_string)
+            result.append(token)
+
+    return result, ''.join(print_result), text_result.split('\n'), errors
+
+
+def SRT_text_tokenizer(text_string, position):
+    tokenizer_state = 1
+    result = ''
+
+    buffer = ''
+
+    while True:
+        _next = False
+        if position >= len(text_string):
+            c = None
+        else:
+            c = text_string[position]
+
+        if tokenizer_state == 1:
+            if c == '<':
+                if result == '':
+                    tokenizer_state = 2
+                    _next = True
+                else:
+                    return result, position
+
+            elif c is None:
+                return result, position
+
+            else:
+                result += c
+                _next = True
+
+        elif tokenizer_state == 2:
+            if c == '/':
+                tokenizer_state = 4
+                _next = True
+            else:
+                result = c
+                tokenizer_state = 3
+                _next = True
+
+        elif tokenizer_state == 3:
+            if c == '>':
+                position += 1
+                return SRTStartTag(result), position
+
+            elif c is None:
+                return SRTStartTag(result, closed=False), position
+            else:
+                result += c
+                _next = True
+
+        elif tokenizer_state == 4:
+            if c == '>':
+                position += 1
+                return SRTEndTag(result), position
+            elif c is None:
+                return SRTEndTag(result, closed=False), position
+            else:
+                result += c
+                _next = True
+
+        if _next:
+            position += 1
+
+
+        
 
 
 def decode_VTT(file_list, frame_rate=24):

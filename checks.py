@@ -1,6 +1,6 @@
 import copy, re, os, csv
 
-from decoders import decode_VTT, decode_SRT, parse_VTT
+from decoders import decode_VTT, decode_SRT, parse_VTT, parse_SRT
 from encoders import encode_VTT
 from reader import read_text_file, hash_file
 from classes import Timecode
@@ -36,7 +36,7 @@ def check_sort(file_name, old=True):
             subs = parse_VTT(file_name)['cues']
 
     elif ext == '.srt':
-        subs = decode_SRT(read_text_file(file_name))
+        subs = parse_SRT(read_text_file(file_name))
 
     else:
         print(
@@ -225,7 +225,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
             subs = parse_VTT(file_name, frame_rate=frame_rate)['cues']
 
     elif ext == '.srt':
-        subs = decode_SRT(read_text_file(file_name), frame_rate=frame_rate)
+        subs = parse_SRT(file_name, frame_rate=frame_rate)
 
     else:
         print(
@@ -877,7 +877,13 @@ def check_near_shot_changes(sub_num, first_found, time, shot_change_list,
 
 def check_sort(file_name):
 
-    subs = parse_VTT(file_name)['cues']
+    name, ext = os.path.splitext(file_name)
+    
+    if ext == '.vtt':
+        subs = parse_VTT(file_name)['cues']
+    elif ext == '.srt':
+        subs = parse_SRT(file_name)
+
     out_of_order = []
 
     for i, sub in enumerate(subs):

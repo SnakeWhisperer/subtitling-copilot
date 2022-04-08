@@ -35,6 +35,17 @@ def fps_check(file_name):
 #     return frame_rate
 
 
+def video_duration(video):
+
+    probe = ffmpeg.probe(video)
+    if probe['streams'][0]['duration'] != probe['streams'][1]['duration']:
+        print(f'Warning: {video} has a mismatch between the streams')
+
+    duration = Timecode(float(probe['streams'][0]['duration']))
+
+    return duration.total_seconds, duration.__str__()[:8]
+
+
 def get_frame_rate(video):
     probe = ffmpeg.probe(video)
     video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')

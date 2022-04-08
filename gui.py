@@ -1,4 +1,4 @@
-import os
+import os, time
 
 from PyQt5.QtWidgets import (QApplication, QLabel, QVBoxLayout, QPushButton,
                              QWidget, QFileDialog, QGridLayout, QFrame,
@@ -12,6 +12,8 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QRect, QPoint, QEvent
 
 from mc_helper import batch_gen_CPS_sheet, batch_extract_OSTs, get_OSTs_single, get_OSTs, check_OST_audit
+from decoders import parse_VTT, parse_SRT
+from fixes import fix_TCFOL, batch_fixes
 from vtt_handler import batch_merge_subs
 from checks import batch_quality_check
 from utils import (copy_scene_changes_from_list, batch_generate_scene_changes,
@@ -309,6 +311,39 @@ class Window(LayoutLineWidget):
             }
 
 
+
+
+
+
+
+
+
+            QScrollBar:vertical {              
+                border: none;
+                background: #1c1b1c;
+                width: 3px;
+                margin: 0px 0px 0px 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop: 0 rgb(44, 74, 201), stop: 0.5 rgb(44, 74, 201), stop:1 rgb(44, 74, 201));
+                min-height: 0px;
+            }
+            QScrollBar::add-line:vertical {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop: 0 rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));
+                height: 0px;
+                subcontrol-position: bottom;
+                subcontrol-origin: margin;
+            }
+            QScrollBar::sub-line:vertical {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));
+                height: 0 px;
+                subcontrol-position: top;
+                subcontrol-origin: margin;
+            }
+
             
         ''')        
 
@@ -458,7 +493,7 @@ class Window(LayoutLineWidget):
         self.save_layout_1.addWidget(self.save_label_1)
         self.save_edit_1 = QLineEdit()
         self.save_edit_1.setReadOnly(True)
-        self.save_edit_1.setTextMargins(0, 0, 100, 0)
+        self.save_edit_1.setTextMargins(0, 0, 0, 0)
         self.save_layout_1.addWidget(self.save_edit_1)
         self.browse_save_1 = QPushButton('Browse...', objectName='browse')
         self.save_layout_1.addWidget(self.browse_save_1)
@@ -1455,7 +1490,7 @@ class Window(LayoutLineWidget):
     def browse_dir_1(self, event):
 
         print(self.content.currentIndex())
-        print(self.content.currentWidget().currentIndex())
+        # print(self.content.currentWidget().currentIndex())
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
@@ -1478,7 +1513,7 @@ class Window(LayoutLineWidget):
 
     def browse_dir_2(self, event):
         print(self.content.currentIndex())
-        print(self.content.currentWidget().currentIndex())
+        # print(self.content.currentWidget().currentIndex())
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
@@ -1698,24 +1733,17 @@ class Window(LayoutLineWidget):
             != len(self.merge_ost_files_list)):
             # Different number of files.
             self.merge_ost_errors += 'ERROR: Cannot merge OSTs. The number of subtitle files is different from the number of OST files.\n'
-        if not self.save_merged_ost_dir:
+        if not self.save_merged_ost_dir and not self.checkbox_3.isChecked():
             self.merge_ost_errors += 'ERROR: Cannot save Subtitle file(s). Please select a directory for the subtitle files.'
         
         if not self.merge_ost_errors:
-            # text = 'Merging OSTs files with...\n'
-            # for file_name in self.merge_subtitle_files_list:
-            #     text += '\n'
-            #     text += file_name
-            # text += '\nAnd...\n'
-            # for file_name in self.merge_ost_files_list:
-            #     text += '\n'
-            #     text += file_name
-            # text += '\n\n'
-            # text += 'Saving to...\n'
-            # text += self.save_merged_ost_dir
-
+            self.merge_messages.setPlainText('Merging...')
             sub_dir = '/'.join(self.merge_subtitle_files_list[0].split('/')[:-1])
             ost_dir = '/'.join(self.merge_ost_files_list[0].split('/')[:-1])
+
+            
+            if self.checkbox_3.isChecked():
+                self.save_merged_ost_dir = sub_dir
 
             batch_merge_subs(
                 sub_dir,
@@ -1832,10 +1860,13 @@ class Window(LayoutLineWidget):
                 glyphs=False,
                 old=False,
                 check_TCFOL=tcfol,
+                check_OST=ost,
                 report=report,
                 report_name=report_name
             )
             print('Quality check DONE')
+            print(type(report))
+            print(report)
 
             self.qc_messages.setPlainText('\n'.join(report))
             
@@ -2019,8 +2050,11 @@ class Window(LayoutLineWidget):
             self.fixes_errors += 'ERROR: Cannot run fixes. Please select a directory for the subtitle files.\n'
         if not self.fixes_videos_dir:
             self.fixes_errors += 'ERROR: Cannot run fixes. Please select a directory for the videos.\n'
-        if not self.fixes_sc_dir:
-            self.fixes_errors += 'ERROR: Cannot run fixes. Please select a directory for the scene changes.\n'
+        # if not self.fixes_sc_dir:
+        #     self.fixes_errors += 'ERROR: Cannot run fixes. Please select a directory for the scene changes.\n'
+
+        # if len(self.fixes_files_dir) != len(self.fixes_videos_dir):
+        #     self.fixes_errors += 'ERROR: Cannot run fixes. The number of videos is not the same as the number of subtitle files.\n'
 
         if not self.fixes_errors:
             text = 'Running fixes for files in directory...\n'
@@ -2030,6 +2064,23 @@ class Window(LayoutLineWidget):
             text += '\n\nAnd shot changes in...\n'
             text += self.fixes_sc_dir
             self.fixes_messages.setPlainText(text)
+            
+            
+            TCFOL = self.fix_TCFOL_checkbox.isChecked()
+            snap_to_frames = self.snap_to_frames_checkbox.isChecked()
+            fix_min_gaps = self.apply_min_gaps_checkbox.isChecked()
+            min_gap = self.min_gap.value()
+
+            batch_fixes(
+                self.fixes_files_dir,
+                self.fixes_videos_dir,
+                42,
+                TCFOL=TCFOL,
+                snap_frames=snap_to_frames,
+                apply_min_gaps=fix_min_gaps,
+                min_gap=min_gap,
+                apply_sort=True
+            )
         else:
             self.fixes_messages.setPlainText(self.fixes_errors)
             self.fixes_errors = ''

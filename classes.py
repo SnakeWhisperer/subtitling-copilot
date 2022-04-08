@@ -616,6 +616,20 @@ class Subtitle(object):
         return round(CPS, 2)
 
 
+    def to_JSON(self):
+        # print(self.__dict__)
+        new_line = '\n'
+        esc_new_line = '\\n'
+        out_string = '{\n'
+        # out_string += f'\t"number": {self.number},\n'
+        out_string += f'\t"start_time": "{self.start_time.print_SRT()}",\n'
+        out_string += f'\t"end_time": "{self.end_time.print_SRT()}",\n'
+        out_string += f'\t"text": "{self.text.replace(new_line, esc_new_line)}",\n'
+        out_string += '\t"channel": null\n}'
+
+        return out_string
+
+
 class SRT(Subtitle):
     """[summary]
 
@@ -669,6 +683,17 @@ class SRT(Subtitle):
         vtt_subtitle = WebVTT(
             self.number, self.text, self.start_time, self.end_time
         )
+
+    def to_JSON(self):
+        out_string = '{'
+        out_string += '\t"number": 1,\n'
+        out_string += '\t"start_time": ' + self.start_time.print_SRT() + ',\n'
+        out_string += '\t"end_time": ' + self.end_time.print_SRT() + ',\n'
+        out_string += '\t"text": ' + self.text + ',\n'
+        out_string += '\t"channel": null\n}'
+
+        return out_string
+
 
 # class WebVTT(Subtitle):
 #     """
@@ -1193,6 +1218,47 @@ class EndTag(object):
 class TimestampTag(object):
     def __init__(self, value):
         self.value = value
+
+
+class SRTStartTag(object):
+    def __init__(self, name, closed=True):
+        split_name = name.split()
+        self.closed = closed
+        self.att = {}
+        if split_name[0] in ['i', 'b', 'u'] and len(split_name) == 1:
+            self.name = split_name[0]
+            self.valid = True
+        elif split_name[0] == 'font' and len(split_name) == 2:
+            self.name = split_name[0]
+            # self.att = ' ' + split_name[1]
+            # NOTE: Still needs to validate key-value pair
+            self.att[split_name[1].split('=')[0]] = split_name[1].split('=')[1].replace('"', '')
+            self.valid = True
+        else:
+            self.name = name
+            self.valid = False
+
+        if self.valid and closed:
+            if self.att:
+                self.token_string = '<' + self.name + ' ' + list(self.att.keys())[0] + '="' + list(self.att.values())[0] + '">'
+            else:
+                self.token_string = '<' + self.name + '>'
+        else:
+            self.token_string = '<' + self.name + '>'
+
+class SRTEndTag(object):
+    def __init__(self, name, closed=True):
+        self.name = name
+        self.closed = closed
+        if name in ['i', 'b', 'u', 'font']:
+            self.valid = True
+        else:
+            self.valid = False
+
+        self.token_string = '</' + self.name
+        if closed:
+            self.token_string += '>'
+
 
 
 def insert_tags(text, italics, bold, underline):

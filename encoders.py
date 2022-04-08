@@ -25,12 +25,20 @@ def encode_SRT(subtitles):
     srt_lines = []
     first = True
 
-    for subtitle in subtitles:
-        if first:
-            srt_lines.append(subtitle.__str__())
-            first = False
+    i = 0
+    
+    while i < len(subtitles) - 1:
+        srt_lines.append(subtitles[i].__str__() + '\n\n')
+        i += 1
+
+    srt_lines.append(subtitles[i].__str__())
+
+    # for subtitle in subtitles:
+    #     if first:
+    #         srt_lines.append(subtitle.__str__())
+    #         first = False
         
-        else:
-            srt_lines.append('\n\n' + subtitle.__str__())
+    #     else:
+    #         srt_lines.append('\n\n' + subtitle.__str__())
 
     return srt_lines
