@@ -269,7 +269,7 @@ class Window(LayoutLineWidget):
 
             QTabBar::tab {
                 height: 30px;
-                width: 100px;
+                width: 150px;
                 background-color: #202021;
                 padding-bottom: 10px;
                 margin: 0px;
@@ -461,7 +461,8 @@ class Window(LayoutLineWidget):
         self.input_1_label.setContentsMargins(0, 0, 100, 10)
         self.opt_1_tab_1_layout.addWidget(self.input_1_label, 0, 0)
 
-        self.file_list_1 = QListWidget()
+        # self.file_list_1 = QListWidget()
+        self.file_list_1 = DropList(['.vtt'])
         self.opt_1_tab_1_layout.addWidget(self.file_list_1, 1, 0)
 
         self.list_1_browse = QPushButton('Browse...', objectName='browse')
@@ -501,7 +502,8 @@ class Window(LayoutLineWidget):
         self.input_2_label.setContentsMargins(0, 0, 100, 10)
         self.opt_1_tab_2_layout.addWidget(self.input_2_label, 0, 0)
 
-        self.file_list_2 = QListWidget()
+        # self.file_list_2 = QListWidget()
+        self.file_list_2 = DropList(['.vtt', '.srt'])
         self.opt_1_tab_2_layout.addWidget(self.file_list_2, 1, 0)
 
         self.list_2_browse = QPushButton('Browse...', objectName='browse')
@@ -511,7 +513,8 @@ class Window(LayoutLineWidget):
         self.input_3_label.setContentsMargins(0, 0, 100, 10)
         self.opt_1_tab_2_layout.addWidget(self.input_3_label, 2, 0)
 
-        self.file_list_3 = QListWidget()
+        # self.file_list_3 = QListWidget()
+        self.file_list_3 = DropList(['.vtt', '.srt'])
         self.opt_1_tab_2_layout.addWidget(self.file_list_3, 3, 0)
 
         self.list_3_browse = QPushButton('Browse...', objectName='browse')
@@ -547,7 +550,8 @@ class Window(LayoutLineWidget):
         self.input_4_label.setContentsMargins(0, 0, 100, 10)
         self.opt_1_tab_3_layout.addWidget(self.input_4_label, 0, 0)
 
-        self.file_list_4 = QListWidget()
+        # self.file_list_4 = QListWidget()
+        self.file_list_4 = DropList(['.docx'])
         self.opt_1_tab_3_layout.addWidget(self.file_list_4, 1, 0)
 
         self.list_4_browse = QPushButton('Browse...', objectName='browse')
@@ -744,7 +748,8 @@ class Window(LayoutLineWidget):
         self.issues_layout.addWidget(self.issues_file_label_1)
         self.add_target_files_layout = QHBoxLayout()
         self.issues_layout.addLayout(self.add_target_files_layout)
-        self.target_files_list = QListWidget()
+        # self.target_files_list = QListWidget()
+        self.target_files_list = DropList(['.vtt', 'srt'])
         # self.target_files_list.setReadOnly(True)
         self.add_target_files_layout.addWidget(self.target_files_list)
         self.browse_target_files = QPushButton('Browse...', objectName='browse')
@@ -755,7 +760,8 @@ class Window(LayoutLineWidget):
         self.issues_layout.addWidget(self.issues_file_label_2)
         self.add_source_files_layout = QHBoxLayout()
         self.issues_layout.addLayout(self.add_source_files_layout)
-        self.source_files_list = QListWidget()
+        # self.source_files_list = QListWidget()
+        self.source_files_list = DropList(['.vtt', '.srt'])
         # self.source_files_list.setReadOnly(True)
         self.add_source_files_layout.addWidget(self.source_files_list)
         self.browse_source_files = QPushButton('Browse...', objectName='browse')
@@ -947,7 +953,8 @@ class Window(LayoutLineWidget):
         self.sc_layout.addWidget(self.copy_sc_videos_label)
         self.sc_copy_videos_layout = QHBoxLayout()
         self.sc_layout.addLayout(self.sc_copy_videos_layout)
-        self.copy_sc_videos_list = QListWidget()
+        # self.copy_sc_videos_list = QListWidget()
+        self.copy_sc_videos_list = DropList(['.mp4'])
         self.sc_copy_videos_layout.addWidget(self.copy_sc_videos_list)
         self.sc_copy_videos_browse = QPushButton('Browse...', objectName='browse')
         self.sc_copy_videos_layout.addWidget(self.sc_copy_videos_browse, 0, QtCore.Qt.AlignBottom)
@@ -989,7 +996,8 @@ class Window(LayoutLineWidget):
         self.sc_gen_layout.addWidget(self.gen_sc_videos_label)
         self.sc_gen_videos_layout = QHBoxLayout()
         self.sc_gen_layout.addLayout(self.sc_gen_videos_layout)
-        self.gen_sc_videos_list = QListWidget()
+        # self.gen_sc_videos_list = QListWidget()
+        self.gen_sc_videos_list = DropList(['.mp4'])
         self.sc_gen_videos_layout.addWidget(self.gen_sc_videos_list)
         self.sc_gen_videos_browse = QPushButton('Browse...', objectName='browse')
         self.sc_gen_videos_layout.addWidget(self.sc_gen_videos_browse, 0, QtCore.Qt.AlignBottom)
@@ -1032,7 +1040,8 @@ class Window(LayoutLineWidget):
         self.fr_layout.addWidget(self.gen_fr_videos_label)
         self.fr_gen_videos_layout = QHBoxLayout()
         self.fr_layout.addLayout(self.fr_gen_videos_layout)
-        self.gen_fr_videos_list = QListWidget()
+        # self.gen_fr_videos_list = QListWidget()
+        self.gen_fr_videos_list = DropList(['.mp4'])
         self.fr_gen_videos_layout.addWidget(self.gen_fr_videos_list)
         self.fr_gen_videos_browse = QPushButton('Browse...', objectName='browse')
         self.fr_gen_videos_layout.addWidget(self.fr_gen_videos_browse, 0, QtCore.Qt.AlignBottom)
@@ -1058,7 +1067,8 @@ class Window(LayoutLineWidget):
         self.stats_layout.addWidget(self.stats_files_label)
         self.stats_files_layout = QHBoxLayout()
         self.stats_layout.addLayout(self.stats_files_layout)
-        self.stats_files_list = QListWidget()
+        # self.stats_files_list = QListWidget()
+        self.stats_files_list = DropList(['.vtt', '.srt'])
         self.stats_files_layout.addWidget(self.stats_files_list)
         self.stats_files_browse = QPushButton('Browse...', objectName='browse')
         self.stats_files_layout.addWidget(self.stats_files_browse, 0, QtCore.Qt.AlignBottom)
@@ -1080,7 +1090,7 @@ class Window(LayoutLineWidget):
 
         self.conv_files_label = QLabel('Subtitle Files', objectName='sub_title')
         self.converters_layout.addWidget(self.conv_files_label)
-        self.conv_files_list = DropList()
+        self.conv_files_list = DropList(['.vtt', '.srt'])
         self.conv_files_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -2305,14 +2315,96 @@ class Window(LayoutLineWidget):
             self.fixes_errors = ''
 
 
+# class DropList(QListWidget):
+#     """Subclass of the QListWidget to make it accept drops
+#     and handle events.
+#     """
+
+#     def __init__(self):
+#         super().__init__()
+#         self.setAcceptDrops(True)
+
+#     def dragEnterEvent(self, event):
+#         if event.mimeData().hasText():
+#             event.accept()
+#         else:
+#             event.ignore()
+
+#     def dragMoveEvent(self, event):
+#         if event.mimeData().hasText():
+#             event.accept()
+#         else:
+#             event.ignore()
+
+#     def dropEvent(self, event):
+#         prev_file_count = self.count()
+#         prev_files = [self.item(row).text() for row in range(prev_file_count)]
+
+#         md = event.mimeData()
+#         invalid_files = []
+#         repeated_files = []
+#         valid_files = []
+
+#         valid_extensions = ['.srt', '.vtt']
+
+#         if md.hasText():
+#             file_names = md.text().split('\n')
+#             if len(file_names) > 1:
+#                 file_names.pop(-1)
+#             for i, file_name in enumerate(file_names):
+#                 name, ext = os.path.splitext(file_name)
+#                 if ext not in valid_extensions:
+#                     invalid_files.append(file_name.replace('file:///', ''))
+#                     continue
+                
+#                 elif file_name.replace('file:///', '') in prev_files:
+#                     repeated_files.append(
+#                         '- ' + file_name.replace('file:///', ''))
+#                     continue
+#                 self.insertItem(i, file_name.replace('file:///', ''))
+
+#         if invalid_files:
+#             invalid_file_names = '\n'.join(invalid_files)
+#             if len(invalid_files) == 1:
+#                 message = (f'The following file will be ignored because its format is not supported:\n\n'
+#                            f'{invalid_file_names}')
+#             else:
+#                 message = (f'The following files will be ignored because their format is not supported:\n\n'
+#                            f'{invalid_file_names}')
+
+#             error_modal = QMessageBox.warning(
+#                 self,
+#                 'Warning',
+#                 message
+#             )
+
+#         if repeated_files:
+#             repeated_file_names = '\n'.join(repeated_files)
+#             if len(repeated_files) == 1:
+#                 title = 'Repeated file'
+#                 message = (f'{repeated_files[0].replace("file:///", "")}\n\n'
+#                            f'is already in the list.\nWill be ignored.')
+#             else:
+#                 title = 'Repeated files'
+#                 message = (f'{repeated_file_names.replace("file:///", "")}\n\n'
+#                            f'are already in the list.\nWill be ignored.')
+
+#             info_modal = QMessageBox.information(
+#                 self,
+#                 title,
+#                 message
+#             )
+
+
 class DropList(QListWidget):
     """Subclass of the QListWidget to make it accept drops
     and handle events.
     """
-
-    def __init__(self):
+    def __init__(self, supported_formats=[]):
         super().__init__()
         self.setAcceptDrops(True)
+        # self.options_widget = options_widget
+        self.supported_formats = supported_formats
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
@@ -2330,23 +2422,42 @@ class DropList(QListWidget):
         prev_file_count = self.count()
         prev_files = [self.item(row).text() for row in range(prev_file_count)]
 
+        # current_option = self.options_widget.currentText()
+
         md = event.mimeData()
         invalid_files = []
         repeated_files = []
         valid_files = []
-
-        valid_extensions = ['.srt', '.vtt']
-
         if md.hasText():
             file_names = md.text().split('\n')
             if len(file_names) > 1:
                 file_names.pop(-1)
             for i, file_name in enumerate(file_names):
                 name, ext = os.path.splitext(file_name)
-                if ext not in valid_extensions:
+                # if ext != '.csv':
+                if ext not in self.supported_formats:
+                    sup = [form[1:].upper() for form in self.supported_formats]
                     invalid_files.append(file_name.replace('file:///', ''))
+                    if len(self.supported_formats) > 1:
+                        sup_message = f'{", ".join(sup[:-1])}, and {sup[-1]}'
+                    else:
+                        sup_message = f'{sup[0]}'
                     continue
-                
+                # if ext != '.csv' and self.options_widget.currentIndex() == 0:
+                #     supported_formats = 'CSV'
+                #     invalid_files.append(file_name.replace('file:///', ''))
+                #     continue
+
+                # elif ext != '.xlsx' and self.options_widget.currentIndex() == 1:
+                #     supported_formats = 'XLSX'
+                #     invalid_files.append(file_name.replace('file:///', ''))
+                #     continue
+
+                # elif ext != '.mp4' and self.options_widget.currentIndex() == 2:
+                #     supported_formats = 'MP4'
+                #     invalid_files.append(file_name.replace('file:///', ''))
+                #     continue
+
                 elif file_name.replace('file:///', '') in prev_files:
                     repeated_files.append(
                         '- ' + file_name.replace('file:///', ''))
@@ -2354,14 +2465,16 @@ class DropList(QListWidget):
                 self.insertItem(i, file_name.replace('file:///', ''))
 
         if invalid_files:
-            invalid_file_names = '\n'.join(invalid_files)
+            invalid_file_names = '\n\n'.join(invalid_files)
             if len(invalid_files) == 1:
-                message = (f'The following file will be ignored because its format is not supported:\n\n'
+                message = (f'Only {sup_message} files are supported.\n'
+                           f'The following file was ignored:\n\n'
                            f'{invalid_file_names}')
             else:
-                message = (f'The following files will be ignored because their format is not supported:\n\n'
+                message = (f'Only {sup_message} files are supported.\n'
+                           f'The following files were ignored:\n\n'
                            f'{invalid_file_names}')
-
+            
             error_modal = QMessageBox.warning(
                 self,
                 'Warning',
@@ -2378,13 +2491,12 @@ class DropList(QListWidget):
                 title = 'Repeated files'
                 message = (f'{repeated_file_names.replace("file:///", "")}\n\n'
                            f'are already in the list.\nWill be ignored.')
-
+            
             info_modal = QMessageBox.information(
                 self,
                 title,
                 message
             )
-
 
 
 if __name__ == '__main__':
