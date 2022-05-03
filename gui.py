@@ -6,14 +6,16 @@ from PyQt5.QtWidgets import (QApplication, QLabel, QVBoxLayout, QPushButton,
                              QStyle, QBoxLayout, QTabWidget, QListWidget,
                              QLayout, QListWidgetItem, QCheckBox, QHBoxLayout,
                              QLineEdit, QPlainTextEdit, QSpinBox,
-                             QAbstractSpinBox, QDoubleSpinBox)
+                             QAbstractSpinBox, QDoubleSpinBox, QComboBox,
+                             QMessageBox, QTableWidget, QTableWidgetItem)
 from PyQt5.QtGui import QColor, QPicture, QPainter, QIcon
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import QRect, QPoint, QEvent
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import QRect, QPoint, QEvent, Qt
 
 from mc_helper import batch_gen_CPS_sheet, batch_extract_OSTs, get_OSTs_single, get_OSTs, check_OST_audit
 from decoders import parse_VTT, parse_SRT
 from fixes import fix_TCFOL, batch_fixes
+from srt_handler import convert_to_JSON
 from vtt_handler import batch_merge_subs
 from checks import batch_quality_check
 from utils import (copy_scene_changes_from_list, batch_generate_scene_changes,
@@ -180,7 +182,21 @@ class Window(LayoutLineWidget):
                 padding: 5px 10px 5px 10px;
             }
 
+            QPushButton#browse1 {
+                background: #343536;
+                color: #c5cad4;
+                border: none;
+                font-size: 10pt;
+                border-radius: 3px;
+                padding: 5px 10px 5px 10px;
+                width: 3em;
+            }
+
             QPushButton#browse:hover {
+                color: white;
+            }
+
+            QPushButton#browse1:hover {
                 color: white;
             }
 
@@ -259,7 +275,7 @@ class Window(LayoutLineWidget):
                 margin: 0px;
                 color: #c5cad4;
                 font-family: "Arial";
-                font-size: 11pt;
+                font-size: 10pt;
             }
 
 
@@ -344,6 +360,22 @@ class Window(LayoutLineWidget):
                 subcontrol-origin: margin;
             }
 
+            QComboBox {
+                width: 2em;
+                background: #202021;
+                color: #c5cad4;
+            }
+
+            QComboBox QAbstractItemView {
+                background: #202021;
+                color: #c5cad4;
+            }
+
+            QMessageBox {
+                background: #202021;
+                color: #c5cad4;
+            }
+
             
         ''')        
 
@@ -420,7 +452,7 @@ class Window(LayoutLineWidget):
 
         self.opt_1_page_cont.addTab(self.opt_1_tab_1, 'Extract')
         self.opt_1_page_cont.addTab(self.opt_1_tab_2, 'Merge')
-        self.opt_1_page_cont.addTab(self.opt_1_tab_3, 'Generate')
+        self.opt_1_page_cont.addTab(self.opt_1_tab_3, 'Generate (MC only)')
 
         # CONTENTS OF THE FIRST TAB IN OPTION 1
         self.opt_1_tab_1_layout = QGridLayout(self.opt_1_tab_1)
@@ -897,11 +929,13 @@ class Window(LayoutLineWidget):
         self.opt_5_tab_2 = QWidget()
         self.opt_5_tab_3 = QWidget()
         self.opt_5_tab_4 = QWidget()
+        self.opt_5_tab_5 = QWidget()
         
         self.opt_5_page_cont.addTab(self.opt_5_tab_1, 'Copy Shot Changes')
         self.opt_5_page_cont.addTab(self.opt_5_tab_2, 'Generate Shot Changes')
         self.opt_5_page_cont.addTab(self.opt_5_tab_3, 'Frame Rates')
         self.opt_5_page_cont.addTab(self.opt_5_tab_4, 'Statistics')
+        self.opt_5_page_cont.addTab(self.opt_5_tab_5, 'Converters')
 
         self.sc_layout = QVBoxLayout(self.opt_5_tab_1)
         # self.sc_title_1_widget = QWidget(objectName='border_widget')
@@ -1038,8 +1072,66 @@ class Window(LayoutLineWidget):
         self.stats_gen_messages = QPlainTextEdit()
         self.stats_gen_messages.setReadOnly(True)
         self.stats_layout.addWidget(self.stats_gen_messages)
+        
+
+
+
+        self.converters_layout = QVBoxLayout(self.opt_5_tab_5)
+
+        self.conv_files_label = QLabel('Subtitle Files', objectName='sub_title')
+        self.converters_layout.addWidget(self.conv_files_label)
+        self.conv_files_list = DropList()
+        self.conv_files_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+        self.converters_layout.addWidget(self.conv_files_list)
+        
+        self.conv_files_buttons_layout = QHBoxLayout()
+        self.converters_layout.addLayout(self.conv_files_buttons_layout)
+
+        self.add_conv_files_button = QPushButton('Add', objectName='browse1')
+        self.remove_conv_files_button = QPushButton('Remove', objectName='browse1')
+        self.clear_conv_files_button = QPushButton('Clear', objectName='browse1')
+
+        self.conv_files_buttons_layout.addWidget(self.add_conv_files_button)
+        self.conv_files_buttons_layout.addWidget(self.remove_conv_files_button)
+        self.conv_files_buttons_layout.addWidget(self.clear_conv_files_button)
+        self.conv_files_buttons_layout.setContentsMargins(0, 10, 0, 0)
+
+        self.conv_files_buttons_layout.addStretch()
 
         
+        self.out_format_conv_layout = QHBoxLayout()
+        self.converters_layout.addLayout(self.out_format_conv_layout)
+
+        self.conv_format_label = QLabel('Output format:')
+        self.out_format_conv_layout.addWidget(self.conv_format_label)
+        
+        self.conv_format_list = QComboBox()
+        self.conv_format_list.addItems(['JSON', 'SRT', 'VTT'])
+        self.out_format_conv_layout.addWidget(self.conv_format_list)
+
+        self.out_format_conv_layout.addStretch()
+        self.out_format_conv_layout.setContentsMargins(0, 10, 0, 0)
+
+        self.conv_save_layout = QHBoxLayout()
+        self.converters_layout.addLayout(self.conv_save_layout)
+
+        self.conv_save_spacer = QWidget()
+        self.conv_save_label = QLabel('Save to')
+        self.conv_save_edit = QLineEdit()
+        self.conv_save_edit.insert(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop'))
+        self.conv_browse_save_butt = QPushButton('...', objectName='browse1')
+
+        self.conv_save_layout.addWidget(self.conv_save_spacer, 2)
+        self.conv_save_layout.addWidget(self.conv_save_label, 0, QtCore.Qt.AlignRight)
+        self.conv_save_layout.addWidget(self.conv_save_edit, QtCore.Qt.AlignRight)
+        self.conv_save_layout.addWidget(self.conv_browse_save_butt, 0, QtCore.Qt.AlignRight)
+
+        self.run_conv_button = QPushButton('Convert', objectName='run')
+        self.converters_layout.addWidget(self.run_conv_button, 0, QtCore.Qt.AlignRight)
+
+
 
 
 
@@ -1156,6 +1248,11 @@ class Window(LayoutLineWidget):
         self.stats_files_browse.clicked.connect(self.browse_list_1)
         self.run_stats_button.clicked.connect(self.get_stats)
         
+        self.add_conv_files_button.clicked.connect(self.add_conv_files)
+        self.remove_conv_files_button.clicked.connect(self.remove_conv_files)
+        self.clear_conv_files_button.clicked.connect(self.clear_conv_files)
+        self.conv_browse_save_butt.clicked.connect(self.conv_browse_save)
+        self.run_conv_button.clicked.connect(self.convert_run)
 
 
 
@@ -1535,7 +1632,7 @@ class Window(LayoutLineWidget):
 
     def browse_dir_3(self, event):
         print(self.content.currentIndex())
-        print(self.content.currentWidget().currentIndex())
+        # print(self.content.currentWidget().currentIndex())
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
@@ -1678,7 +1775,129 @@ class Window(LayoutLineWidget):
         self.issues_sheet_name = file_name
         self.save_sheet_entry.clear()
         self.save_sheet_entry.insert(self.issues_sheet_name)
+
     
+    def add_conv_files(self, event):
+        file_names, _ = QFileDialog.getOpenFileNames(
+            self,
+            'Select Files...',
+            os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop'),
+            '(*.srt *.vtt)'
+        )
+
+        prev_file_count = self.conv_files_list.count()
+        prev_files = [self.conv_files_list.item(row).text()
+                      for row in range(prev_file_count)]
+
+
+        repeated_files = []
+
+        if file_names:
+            items_count = prev_file_count
+            for i, file_name in enumerate(file_names):
+                if file_name in prev_files:
+                    repeated_files.append('- ' + file_name)
+                    continue
+                current_item = QListWidgetItem()
+                current_item.setText(file_name)
+
+                self.conv_files_list.insertItem(items_count + i, current_item)
+
+        if repeated_files:
+            repeated_file_names = '\n'.join(repeated_files)
+            if len(repeated_files) == 1:
+                title = 'Repeated File'
+                message = (f'{repeated_files[0].replace("file:///", "")}\n\n'
+                           f'is already in the list.\nWill be ignored.')
+            else:
+                title = 'Repeated Files'
+                message = (f'{repeated_file_names.replace("file:///", "")}\n\n'
+                           f'are already in the list.\nWill be ignored.')
+
+            info_modal = QMessageBox.information(
+                self,
+                title,
+                message
+            )
+
+    def remove_conv_files(self, event):
+        selected_list = self.conv_files_list.selectedItems()
+        for item in selected_list:
+            current_row = self.conv_files_list.indexFromItem(item).row()
+            self.conv_files_list.takeItem(current_row)
+
+    def clear_conv_files(self, event):
+        self.conv_files_list.clear()
+
+    def conv_browse_save(self, event):
+        save_path = QFileDialog.getExistingDirectory(
+            self,
+            'Select Directory',
+            os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop'),
+            QFileDialog.ShowDirsOnly
+        )
+
+        if save_path:
+            self.conv_save_edit.clear()
+            self.conv_save_edit.insert(save_path)
+
+    def convert_run(self, event):
+        file_count = self.conv_files_list.count()
+        files = [self.conv_files_list.item(row).text()
+                 for row in range(file_count)]
+
+        output_format = self.conv_format_list.currentText()
+
+        save_path = self.conv_save_edit.text()
+
+        if not files:
+
+            error_modal = QMessageBox().critical(
+                self,
+                'Error',
+                'Please add at least one subtitle file to convert.',
+            )
+
+
+            return
+
+        if not save_path:
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                'Please select a path for the converted files.'
+            )
+
+            return
+
+        if not os.path.isdir(save_path):
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                'The destination path does not exist.'
+            )
+
+            return
+
+        for sub_file in files:
+            name, ext = os.path.splitext(sub_file)
+            actual_name = name.split('/')[-1]
+
+            if ext == '.srt':
+                subs = parse_SRT(sub_file)
+                if output_format == 'JSON':
+                    json_string = convert_to_JSON(subs)
+                    with open(save_path+'\\'+actual_name+'.json', 'w', encoding='utf-8') as out_file:
+                        out_file.write(json_string)
+
+
+        success_modal = QMessageBox.information(
+            self,
+            'Success',
+            'All files converted successfully'
+        )
+        
+
     def extract_ost(self, event):
         
         if not self.extract_ost_files_list:
@@ -2085,7 +2304,86 @@ class Window(LayoutLineWidget):
             self.fixes_messages.setPlainText(self.fixes_errors)
             self.fixes_errors = ''
 
-    
+
+class DropList(QListWidget):
+    """Subclass of the QListWidget to make it accept drops
+    and handle events.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasText():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasText():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        prev_file_count = self.count()
+        prev_files = [self.item(row).text() for row in range(prev_file_count)]
+
+        md = event.mimeData()
+        invalid_files = []
+        repeated_files = []
+        valid_files = []
+
+        valid_extensions = ['.srt', '.vtt']
+
+        if md.hasText():
+            file_names = md.text().split('\n')
+            if len(file_names) > 1:
+                file_names.pop(-1)
+            for i, file_name in enumerate(file_names):
+                name, ext = os.path.splitext(file_name)
+                if ext not in valid_extensions:
+                    invalid_files.append(file_name.replace('file:///', ''))
+                    continue
+                
+                elif file_name.replace('file:///', '') in prev_files:
+                    repeated_files.append(
+                        '- ' + file_name.replace('file:///', ''))
+                    continue
+                self.insertItem(i, file_name.replace('file:///', ''))
+
+        if invalid_files:
+            invalid_file_names = '\n'.join(invalid_files)
+            if len(invalid_files) == 1:
+                message = (f'The following file will be ignored because its format is not supported:\n\n'
+                           f'{invalid_file_names}')
+            else:
+                message = (f'The following files will be ignored because their format is not supported:\n\n'
+                           f'{invalid_file_names}')
+
+            error_modal = QMessageBox.warning(
+                self,
+                'Warning',
+                message
+            )
+
+        if repeated_files:
+            repeated_file_names = '\n'.join(repeated_files)
+            if len(repeated_files) == 1:
+                title = 'Repeated file'
+                message = (f'{repeated_files[0].replace("file:///", "")}\n\n'
+                           f'is already in the list.\nWill be ignored.')
+            else:
+                title = 'Repeated files'
+                message = (f'{repeated_file_names.replace("file:///", "")}\n\n'
+                           f'are already in the list.\nWill be ignored.')
+
+            info_modal = QMessageBox.information(
+                self,
+                title,
+                message
+            )
 
 
 

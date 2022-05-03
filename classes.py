@@ -616,12 +616,12 @@ class Subtitle(object):
         return round(CPS, 2)
 
 
-    def to_JSON(self):
+    def to_JSON(self, attrs=['number', 'start_time', 'end_time', 'text']):
         # print(self.__dict__)
         new_line = '\n'
         esc_new_line = '\\n'
         out_string = '{\n'
-        # out_string += f'\t"number": {self.number},\n'
+        out_string += f'\t"number": {self.number},\n'
         out_string += f'\t"start_time": "{self.start_time.print_SRT()}",\n'
         out_string += f'\t"end_time": "{self.end_time.print_SRT()}",\n'
         out_string += f'\t"text": "{self.text.replace(new_line, esc_new_line)}",\n'

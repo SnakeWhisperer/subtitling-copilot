@@ -1,5 +1,7 @@
 import re, os, xlsxwriter, srt_handler, copy, docx, ffmpeg
 
+from typing import Union
+
 from decoders import decode_VTT, parse_VTT, VTT_text_parser, parse_SRT
 from reader import read_text_file
 from classes import Timecode, WebVTT
@@ -1074,11 +1076,51 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
             span_end, offending_list, severity_list)
 
 
-def extract_subs(file_name, span_start, span_end,
-                 OST=False, OST_only=False, out_name='', old=True):
+def extract_subs(file_name: str, span_start: Union[str, int],
+                 span_end: Union[str, int], OST:bool = False,
+                 OST_only:bool = False, out_name:str ='', old:bool = True):
+    """Given a time span, extracts subtitles that fall in that range.
 
+    Developed originally for MasterClass.
+    Can be used for any other project ignoring
+    the OST and OST_only arguments.
 
+    Parameters
+    ----------
+    file_name : str
+        File name from which to extract the subtitles.
+        Can be a full path if the file is in a different directory.
+    span_start : Union[str, float, int]
+        The lower limit of the time range
+        from which to extract the subtitles.
+    span_end : Union[str, float, int]
+        The upper limit of the time range
+        from which to extract the subtitles.
+    OST : bool, optional
+        True to include OSTs in the output or False to ignore them.
+        Internally overridden to True if 'OST_only' is True.
+        by default False:bool
+    OST_only : bool, optional
+        True to only include OSTs in the output
+        or False to include everything depending on the argument 'OST',
+        by default False:bool
+    out_name : str, optional
+        File name of the output file including the extension.
+        Can be a full path. Will be saved
+        in the current working directory if only file name,
+        by default '':str
+    old : bool, optional
+        True to use the old VTT parser
+        or False to use the best, most recent one, by default True:bool
 
+    Raises
+    ------
+    FormatError
+        If the input file name or output file name have an extension
+        other than .vtt or .srt
+    """
+
+    # If only extracting OSTs, set OST for the for-loop.
     if OST_only:
         OST = True
 
@@ -1092,8 +1134,8 @@ def extract_subs(file_name, span_start, span_end,
         in_vtt = True
         in_srt = False
     
-    elif file_ext == '.srt':
-        in_subs = decode_SRT(read_text_file(file_name))
+    elif in_ext == '.srt':
+        in_subs = parse_SRT(file_name)
         in_vtt = False
         in_srt = True
 
@@ -1180,7 +1222,23 @@ def extract_subs(file_name, span_start, span_end,
             srt_handler.save_subs(out_name, out_subs)
 
 
-def pre_fix(file_name, lang, old=True):
+def pre_fix(file_name: str, lang: str, old:bool = True):
+    """First attempt at an automatic prefix for MasterClass subtitles.
+
+    Never used.
+
+    Parameters
+    ----------
+    file_name : str
+        Subtitle file name. Can be a full path
+        if the file is in a different directory.
+    lang : str
+        The language of the file.
+        Important for the checks and replacements.
+    old : bool, optional
+        True to use the old VTT parser
+        or False to use the best, most recent one, by default True:bool
+    """
 
     REPLACEMENTS = {
         '@@@': '</i>',
@@ -1259,8 +1317,19 @@ def pre_fix(file_name, lang, old=True):
 
 
 
-def check_OSTs(directory, old=True):
-    
+def check_OSTs(directory: str, old:bool = True):
+    """Checks the validity of OSTs in MasterClass.
+
+    Not used.
+
+    Parameters
+    ----------
+    directory : str
+        The path to the directory of the files.
+    old : bool, optional
+        True to use the old VTT parser
+        or False to use the best, most recent one, by default True:bool
+    """
     
     original_dir = os.getcwd()
     os.chdir(directory)
@@ -1298,6 +1367,13 @@ def check_OSTs(directory, old=True):
 
 
 def check_GEMs(directory):
+    """Don't know what this was supposed to do.
+
+    Parameters
+    ----------
+    directory : _type_
+        _description_
+    """
 
     oiriginal_dir = os.getcwd()
     os.chdir(directory)
@@ -1312,7 +1388,26 @@ def check_GEMs(directory):
             in_files = os.listdir()
 
 
-def NAS_consist(directory, old=True):
+def NAS_consist(directory:str, old:bool = True):
+    """Finds subtitles with italics or quotes.
+
+    Used to check the consistency of lyrics in the NAS class.
+    Used by 'NAS_consist_batch' to do this in batch.
+
+    Parameters
+    ----------
+    directory : str
+        The path to the directory of the files.
+    old : bool, optional
+        True to use the old VTT parser
+        or False to use the best, most recent one, by default True:bool
+
+    Returns
+    -------
+    list
+        Contains the language of the file and the subtitles
+        that have italics or quotes.
+    """
 
     original_dir = os.getcwd()
     os.chdir(directory)
@@ -1351,8 +1446,23 @@ def NAS_consist(directory, old=True):
     return lang_cont
 
 
-def NAS_consist_batch(file_name, directories, look_up=[]):
+def NAS_consist_batch(file_name:str, directories:list, look_up:list = []):
+    """Finds subtitles with italics or quotes in several directories.
 
+    Used to check the consistency of lyrics in the NAS class.
+
+    Parameters
+    ----------
+    file_name : str
+        File name to save the information
+        on the subtitles with italics or quotes.
+    directories : list
+        List of the language directories to check.
+    look_up : list, optional
+        List of strings to look in the files,
+        usually '<i>' and quotation marks, by default []
+    """
+    
     with open(file_name, 'w', encoding='utf-8-sig') as const_file:
         for directory in directories:
             # contents = NAS_consist(directory)
@@ -2018,7 +2128,7 @@ def find_similarity(video_dir, file_dir):
     workbook = xlsxwriter.Workbook('Similarities.xlsx')
     worksheet = workbook.add_worksheet()
     bold_format = workbook.add_format({'bold': 1})
-    highest_format = workbook.add_format('bg_color': 'red')
+    highest_format = workbook.add_format({'bg_color': 'red'})
 
     row_counter = 1
     for i, s_name in enumerate(sub_list):
