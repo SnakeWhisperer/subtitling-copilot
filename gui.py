@@ -455,46 +455,95 @@ class Window(LayoutLineWidget):
         self.opt_1_page_cont.addTab(self.opt_1_tab_3, 'Generate (MC only)')
 
         # CONTENTS OF THE FIRST TAB IN OPTION 1
-        self.opt_1_tab_1_layout = QGridLayout(self.opt_1_tab_1)
+        self.opt_1_tab_1_layout = QVBoxLayout(self.opt_1_tab_1)
 
         self.input_1_label = QLabel('Subtitle Files', objectName='sub_title')
-        self.input_1_label.setContentsMargins(0, 0, 100, 10)
-        self.opt_1_tab_1_layout.addWidget(self.input_1_label, 0, 0)
+        self.opt_1_tab_1_layout.addWidget(self.input_1_label)
 
-        # self.file_list_1 = QListWidget()
+        self.opt_1_tab_1_files_layout = QHBoxLayout()
+        self.opt_1_tab_1_layout.addLayout(self.opt_1_tab_1_files_layout)
+        
         self.file_list_1 = DropList(['.vtt'])
-        self.opt_1_tab_1_layout.addWidget(self.file_list_1, 1, 0)
+        self.file_list_1.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+        self.opt_1_tab_1_files_layout.addWidget(self.file_list_1)
 
-        self.list_1_browse = QPushButton('Browse...', objectName='browse')
-        self.opt_1_tab_1_layout.addWidget(self.list_1_browse, 1, 1, QtCore.Qt.AlignBottom)
+        self.opt_1_tab_1_files_browse_layout = QVBoxLayout()
+        self.opt_1_tab_1_files_layout.addLayout(self.opt_1_tab_1_files_browse_layout)
 
-        self.save_layout_widget = QWidget()
-        self.opt_1_tab_1_layout.addWidget(self.save_layout_widget, 4, 0)
-        self.save_layout = QHBoxLayout(self.save_layout_widget)
-        self.save_layout.setContentsMargins(0, 10, 0, 10)
-        self.save_label = QLabel('Save new files to:', objectName='bold_label')
-        self.save_layout.addWidget(self.save_label)
-        self.save_edit = QLineEdit()
-        self.save_edit.setReadOnly(True)
-        self.save_edit.setTextMargins(0, 0, 100, 0)
-        self.save_layout.addWidget(self.save_edit)
-        self.browse_save = QPushButton('Browse...', objectName='browse')
-        self.save_layout.addWidget(self.browse_save)
-        self.save_layout.addStretch()
+        self.opt_1_tab_1_add = QPushButton('Add...', objectName='browse')
+        self.opt_1_tab_1_remove = QPushButton('Remove', objectName='browse')
+        self.opt_1_tab_1_clear = QPushButton('Clear', objectName='browse')
+        self.opt_1_tab_1_files_browse_layout.addWidget(self.opt_1_tab_1_add)
+        self.opt_1_tab_1_files_browse_layout.addWidget(self.opt_1_tab_1_remove)
+        self.opt_1_tab_1_files_browse_layout.addWidget(self.opt_1_tab_1_clear)
+
+        self.opt_1_tab_1_files_browse_layout.addStretch()
+
+        self.opt_1_tab_1_save_layout = QHBoxLayout()
+        self.opt_1_tab_1_save_layout.setContentsMargins(0, 10, 0, 10)
+        self.opt_1_tab_1_layout.addLayout(self.opt_1_tab_1_save_layout)
+        self.opt_1_tab_1_save_label = QLabel('Save new files to:', objectName='bold_label')
+        self.opt_1_tab_1_save_layout.addWidget(self.opt_1_tab_1_save_label)
+        self.opt_1_tab_1_save_edit = QLineEdit()
+        self.opt_1_tab_1_save_edit.setReadOnly(True)
+        self.opt_1_tab_1_save_edit.setTextMargins(0, 0, 100, 0)
+        self.opt_1_tab_1_save_layout.addWidget(self.opt_1_tab_1_save_edit)
+        self.opt_1_tab_1_browse_save = QPushButton('Browse...', objectName='browse')
+        self.opt_1_tab_1_save_layout.addWidget(self.opt_1_tab_1_browse_save)
+        self.opt_1_tab_1_save_layout.addStretch()
 
 
-        self.checkbox_1 = QCheckBox('Save extracted OSTs')
-        self.opt_1_tab_1_layout.addWidget(self.checkbox_1, 5, 0)
+        self.opt_1_tab_1_checkbox_1 = QCheckBox('Save extracted OSTs')
+        self.opt_1_tab_1_layout.addWidget(self.opt_1_tab_1_checkbox_1)
 
-        self.checkbox_2 = QCheckBox('Delete OSTs from files after extracting')
-        self.opt_1_tab_1_layout.addWidget(self.checkbox_2, 6, 0)
+        self.opt_1_tab_1_checkbox_2 = QCheckBox('Delete OSTs from files after extracting')
+        self.opt_1_tab_1_layout.addWidget(self.opt_1_tab_1_checkbox_2)
 
         self.extract_ost_button = QPushButton('Extract', objectName='run')
-        self.opt_1_tab_1_layout.addWidget(self.extract_ost_button, 7, 1)
+        self.opt_1_tab_1_layout.addWidget(self.extract_ost_button, 0, QtCore.Qt.AlignRight)
         
-        self.messages = QPlainTextEdit()
-        self.messages.setReadOnly(True)
-        self.opt_1_tab_1_layout.addWidget(self.messages, 8, 0, 1, 2)
+
+
+        # self.input_1_label = QLabel('Subtitle Files', objectName='sub_title')
+        # self.input_1_label.setContentsMargins(0, 0, 100, 10)
+        # self.opt_1_tab_1_layout.addWidget(self.input_1_label, 0, 0)
+
+        # # self.file_list_1 = QListWidget()
+        # self.file_list_1 = DropList(['.vtt'])
+        # self.opt_1_tab_1_layout.addWidget(self.file_list_1, 1, 0)
+
+        # self.list_1_browse = QPushButton('Browse...', objectName='browse')
+        # self.opt_1_tab_1_layout.addWidget(self.list_1_browse, 1, 1, QtCore.Qt.AlignBottom)
+
+        # self.save_layout_widget = QWidget()
+        # self.opt_1_tab_1_layout.addWidget(self.save_layout_widget, 4, 0)
+        # self.save_layout = QHBoxLayout(self.save_layout_widget)
+        # self.save_layout.setContentsMargins(0, 10, 0, 10)
+        # self.save_label = QLabel('Save new files to:', objectName='bold_label')
+        # self.save_layout.addWidget(self.save_label)
+        # self.save_edit = QLineEdit()
+        # self.save_edit.setReadOnly(True)
+        # self.save_edit.setTextMargins(0, 0, 100, 0)
+        # self.save_layout.addWidget(self.save_edit)
+        # self.browse_save = QPushButton('Browse...', objectName='browse')
+        # self.save_layout.addWidget(self.browse_save)
+        # self.save_layout.addStretch()
+
+
+        # self.checkbox_1 = QCheckBox('Save extracted OSTs')
+        # self.opt_1_tab_1_layout.addWidget(self.checkbox_1, 5, 0)
+
+        # self.checkbox_2 = QCheckBox('Delete OSTs from files after extracting')
+        # self.opt_1_tab_1_layout.addWidget(self.checkbox_2, 6, 0)
+
+        # self.extract_ost_button = QPushButton('Extract', objectName='run')
+        # self.opt_1_tab_1_layout.addWidget(self.extract_ost_button, 7, 1)
+        
+        # self.messages = QPlainTextEdit()
+        # self.messages.setReadOnly(True)
+        # self.opt_1_tab_1_layout.addWidget(self.messages, 8, 0, 1, 2)
 
         # CONTENTS OF THE SECOND TAB IN OPTION 1
         self.opt_1_tab_2_layout = QGridLayout(self.opt_1_tab_2)
@@ -1212,8 +1261,12 @@ class Window(LayoutLineWidget):
         self.option_5_button.clicked.connect(self.option_5_clicked)
         # self.option_6_button.clicked.connect(self.option_6_clicked)
 
-        self.list_1_browse.clicked.connect(self.browse_list_1)
-        self.browse_save.clicked.connect(self.browse_save_dir)
+        # self.list_1_browse.clicked.connect(self.browse_list_1)
+        # self.opt_1_tab_1_add.clicked.connect(self.browse_list_1)
+        self.opt_1_tab_1_add.clicked.connect(self.add_files)
+        self.opt_1_tab_1_remove.clicked.connect(self.remove_files)
+        self.opt_1_tab_1_clear.clicked.connect(self.clear_files)
+        self.opt_1_tab_1_browse_save.clicked.connect(self.browse_save_dir)
         self.extract_ost_button.clicked.connect(self.extract_ost)
 
         self.list_2_browse.clicked.connect(self.browse_list_1)
@@ -1322,7 +1375,86 @@ class Window(LayoutLineWidget):
 
 
 
+    def add_files(self, event):
+        if self.content.currentIndex() == 1:
+            if self.content.currentWidget().currentIndex() == 0:
+                supported_formats = '*.vtt'
+                drop_list = self.file_list_1
+            elif self.content.currentWidget().currentIndex() == 1:
+                supported_formats = '*.vtt'
+            elif self.content.currentWidget().currentIndex() == 2:
+                supported_formats = '*.vtt'
 
+        file_names, _ = QFileDialog.getOpenFileNames(
+            self,
+            'Select Files...',
+            os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop'),
+            supported_formats
+        )
+
+        prev_file_count = drop_list.count()
+        prev_files = [drop_list.item(row).text()
+                      for row in range(prev_file_count)]
+
+        repeated_files = []
+
+        # Get the clean file names and exclude repeated ones.
+        if file_names:
+            items_count = drop_list.count()
+            for i, file_name in enumerate(file_names):
+                if file_name in prev_files:
+                    repeated_files.append('- ' + file_name)
+                    continue
+                current_item = QListWidgetItem()
+                current_item.setText(file_name)
+
+                drop_list.insertItem(items_count + i, current_item)
+        
+        # Generate info modal to let the user know
+        # about ignored repeated files.
+        if repeated_files:
+            repeated_file_names = '\n'.join(repeated_files)
+            if len(repeated_files) == 1:
+                title = 'Repeated file'
+                message = (f'{repeated_files[0].replace("file:///", "")}'
+                           f'\n\nis already in the list.\nIgnored.')
+            else:
+                title = 'Repeated files'
+                message = (f'{repeated_file_names.replace("file:///", "")}'
+                           f'\n\nare already in the list.\nIgnored.')
+            
+            info_modal = QMessageBox.information(
+                self,
+                title,
+                message
+            )
+
+
+    def remove_files(self, event):
+        if self.content.currentIndex() == 1:
+            if self.content.currentWidget().currentIndex() == 0:
+                drop_list = self.file_list_1
+            elif self.content.currentWidget().currentIndex() == 1:
+                pass
+            elif self.content.currentWidget().currentIndex() == 2:
+                pass
+
+        selected_list = drop_list.selectedItems()
+
+        for item in selected_list:
+            current_row = drop_list.indexFromItem(item).row()
+            drop_list.takeItem(current_row)
+
+    def clear_files(self, event):
+        if self.content.currentIndex() == 1:
+            if self.content.currentWidget().currentIndex() == 0:
+                drop_list = self.file_list_1
+            elif self.content.currentWidget().currentIndex() == 1:
+                pass
+            elif self.content.currentWidget().currentIndex() == 2:
+                pass
+
+        drop_list.clear()
 
 
     def option_1_clicked(self, event):
@@ -1677,8 +1809,8 @@ class Window(LayoutLineWidget):
         if self.content.currentIndex() == 1:
             if self.content.currentWidget().currentIndex() == 0:
                 self.save_extracted_ost_dir = save_dir
-                self.save_edit.clear()
-                self.save_edit.insert(self.save_extracted_ost_dir)
+                self.opt_1_tab_1_save_edit.clear()
+                self.opt_1_tab_1_save_edit.insert(self.save_extracted_ost_dir)
 
             elif self.content.currentWidget().currentIndex() == 1:
                 self.save_merged_ost_dir = save_dir
