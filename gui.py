@@ -680,39 +680,105 @@ class Window(LayoutLineWidget):
         # self.merge_messages.setReadOnly(True)
         # self.opt_1_tab_2_layout.addWidget(self.merge_messages, 7, 0, 1, 2)
 
+
+
         # CONTENTS OF THE THIRD TAB IN OPTION 1
-        self.opt_1_tab_3_layout = QGridLayout(self.opt_1_tab_3)
+        self.opt_1_tab_3_layout = QVBoxLayout(self.opt_1_tab_3)
+
         self.input_4_label = QLabel('OST Audit File(s)', objectName='sub_title')
         self.input_4_label.setContentsMargins(0, 0, 100, 10)
-        self.opt_1_tab_3_layout.addWidget(self.input_4_label, 0, 0)
+        self.opt_1_tab_3_layout.addWidget(self.input_4_label)
 
-        # self.file_list_4 = QListWidget()
+        self.opt_1_tab_3_files_layout = QHBoxLayout()
+        self.opt_1_tab_3_layout.addLayout(self.opt_1_tab_3_files_layout)
+
         self.file_list_4 = DropList(['.docx'])
-        self.opt_1_tab_3_layout.addWidget(self.file_list_4, 1, 0)
+        self.file_list_4.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+        
+        self.opt_1_tab_3_files_layout.addWidget(self.file_list_4)
+        self.opt_1_tab_3_files_browse_layout = QVBoxLayout()
+        self.opt_1_tab_3_files_layout.addLayout(self.opt_1_tab_3_files_browse_layout)
+        self.opt_1_tab_3_add = QPushButton('Add...', objectName='browse')
+        self.opt_1_tab_3_remove = QPushButton('Remove', objectName='browse')
+        self.opt_1_tab_3_clear = QPushButton('Clear', objectName='browse')
 
-        self.list_4_browse = QPushButton('Browse...', objectName='browse')
-        self.opt_1_tab_3_layout.addWidget(self.list_4_browse, 1, 1, QtCore.Qt.AlignBottom)
+        self.opt_1_tab_3_files_browse_layout.addWidget(self.opt_1_tab_3_add)
+        self.opt_1_tab_3_files_browse_layout.addWidget(self.opt_1_tab_3_remove)
+        self.opt_1_tab_3_files_browse_layout.addWidget(self.opt_1_tab_3_clear)
+        self.opt_1_tab_3_files_browse_layout.addStretch()
 
-        self.save_layout_widget_2 = QWidget()
-        self.opt_1_tab_3_layout.addWidget(self.save_layout_widget_2, 2, 0)
-        self.save_layout_2 = QHBoxLayout(self.save_layout_widget_2)
-        self.save_layout_2.setContentsMargins(0, 10, 0, 10)
-        self.save_label_2 = QLabel('Save OST files to:', objectName='bold_label')
-        self.save_layout_2.addWidget(self.save_label_2)
-        self.save_edit_2 = QLineEdit()
-        self.save_edit_2.setReadOnly(True)
-        self.save_edit_2.setTextMargins(0, 0, 100, 0)
-        self.save_layout_2.addWidget(self.save_edit_2)
-        self.browse_save_2 = QPushButton('Browse...', objectName='browse')
-        self.save_layout_2.addWidget(self.browse_save_2)
-        self.save_layout_2.addStretch()
+        self.opt_1_tab_3_save_layout = QHBoxLayout()
+        self.opt_1_tab_3_layout.addLayout(self.opt_1_tab_3_save_layout)
+
+        self.opt_1_tab_3_save_label = QLabel('Save OST files to:', objectName='bold_label')
+        self.opt_1_tab_3_save_layout.addWidget(self.opt_1_tab_3_save_label)
+        self.opt_1_tab_3_save_edit = QLineEdit()
+        self.opt_1_tab_3_save_edit.setReadOnly(True)
+        self.opt_1_tab_3_save_edit.setTextMargins(0, 0, 0, 0)
+        self.opt_1_tab_3_save_layout.addWidget(self.opt_1_tab_3_save_edit)
+        self.opt_1_tab_3_browse_save = QPushButton('Browse...', objectName='browse')
+        self.opt_1_tab_3_save_layout.addWidget(self.opt_1_tab_3_browse_save)
+        self.opt_1_tab_3_save_layout.addStretch()
+        self.opt_1_tab_3_save_layout.setContentsMargins(0, 10, 0, 10)
 
         self.generate_ost_button = QPushButton('Generate', objectName='run')
-        self.opt_1_tab_3_layout.addWidget(self.generate_ost_button, 3, 1)
+        self.opt_1_tab_3_layout.addWidget(self.generate_ost_button, 0, QtCore.Qt.AlignRight)
 
-        self.generation_messages = QPlainTextEdit()
-        self.generation_messages.setReadOnly(True)
-        self.opt_1_tab_3_layout.addWidget(self.generation_messages, 4, 0, 1, 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # self.opt_1_tab_3_layout = QGridLayout(self.opt_1_tab_3)
+        # self.input_4_label = QLabel('OST Audit File(s)', objectName='sub_title')
+        # self.input_4_label.setContentsMargins(0, 0, 100, 10)
+        # self.opt_1_tab_3_layout.addWidget(self.input_4_label, 0, 0)
+
+        # # self.file_list_4 = QListWidget()
+        # self.file_list_4 = DropList(['.docx'])
+        # self.opt_1_tab_3_layout.addWidget(self.file_list_4, 1, 0)
+
+        # self.list_4_browse = QPushButton('Browse...', objectName='browse')
+        # self.opt_1_tab_3_layout.addWidget(self.list_4_browse, 1, 1, QtCore.Qt.AlignBottom)
+
+        # self.save_layout_widget_2 = QWidget()
+        # self.opt_1_tab_3_layout.addWidget(self.save_layout_widget_2, 2, 0)
+        # self.save_layout_2 = QHBoxLayout(self.save_layout_widget_2)
+        # self.save_layout_2.setContentsMargins(0, 10, 0, 10)
+        # self.save_label_2 = QLabel('Save OST files to:', objectName='bold_label')
+        # self.save_layout_2.addWidget(self.save_label_2)
+        # self.save_edit_2 = QLineEdit()
+        # self.save_edit_2.setReadOnly(True)
+        # self.save_edit_2.setTextMargins(0, 0, 100, 0)
+        # self.save_layout_2.addWidget(self.save_edit_2)
+        # self.browse_save_2 = QPushButton('Browse...', objectName='browse')
+        # self.save_layout_2.addWidget(self.browse_save_2)
+        # self.save_layout_2.addStretch()
+
+        # self.generate_ost_button = QPushButton('Generate', objectName='run')
+        # self.opt_1_tab_3_layout.addWidget(self.generate_ost_button, 3, 1)
+
+        # self.generation_messages = QPlainTextEdit()
+        # self.generation_messages.setReadOnly(True)
+        # self.opt_1_tab_3_layout.addWidget(self.generation_messages, 4, 0, 1, 2)
 
 
         # OPTION 2 CONTENTS
@@ -1368,8 +1434,13 @@ class Window(LayoutLineWidget):
         self.opt_1_tab_2_browse_save.clicked.connect(self.browse_save_dir)
         self.merge_ost_button.clicked.connect(self.merge_ost)        
 
-        self.list_4_browse.clicked.connect(self.browse_list_3)
-        self.browse_save_2.clicked.connect(self.browse_save_dir)
+        # self.list_4_browse.clicked.connect(self.browse_list_3)
+        # self.browse_save_2.clicked.connect(self.browse_save_dir)
+        # self.generate_ost_button.clicked.connect(self.generate_ost)
+        self.opt_1_tab_3_add.clicked.connect(self.add_files)
+        self.opt_1_tab_3_remove.clicked.connect(self.remove_files)
+        self.opt_1_tab_3_clear.clicked.connect(self.clear_files)
+        self.opt_1_tab_3_browse_save.clicked.connect(self.browse_save_dir)
         self.generate_ost_button.clicked.connect(self.generate_ost)
 
         self.browse_qc_files.clicked.connect(self.browse_qc_subs_dir)
@@ -1481,7 +1552,8 @@ class Window(LayoutLineWidget):
                 elif self.sender() == self.opt_1_tab_2_add_2:
                     drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
-                supported_formats = '*.vtt'
+                supported_formats = '*.docx'
+                drop_list = self.file_list_4
 
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
@@ -1538,7 +1610,7 @@ class Window(LayoutLineWidget):
                 elif self.sender() == self.opt_1_tab_2_remove_2:
                     drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
-                pass
+                drop_list = self.file_list_4
 
         selected_list = drop_list.selectedItems()
 
@@ -1556,7 +1628,7 @@ class Window(LayoutLineWidget):
                 elif self.sender() == self.opt_1_tab_2_clear_2:
                     drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
-                pass
+                drop_list = self.file_list_4
 
         drop_list.clear()
 
@@ -1923,8 +1995,8 @@ class Window(LayoutLineWidget):
 
             elif self.content.currentWidget().currentIndex() == 2:
                 self.save_gen_ost_dir = save_dir
-                self.save_edit_2.clear()
-                self.save_edit_2.insert(self.save_gen_ost_dir)
+                self.opt_1_tab_3_save_edit.clear()
+                self.opt_1_tab_3_save_edit.insert(self.save_gen_ost_dir)
 
         elif self.content.currentIndex() == 2:
             pass
@@ -2251,15 +2323,15 @@ class Window(LayoutLineWidget):
 
         
         if not errors:
-            sub_dir = '/'.join(sub_files[0].split('/')[:-1])
-            ost_dir = '/'.join(ost_files[0].split('/')[:-1])
+            # sub_dir = '/'.join(sub_files[0].split('/')[:-1])
+            # ost_dir = '/'.join(ost_files[0].split('/')[:-1])
 
             if self.checkbox_3.isChecked():
                 save_path = sub_dir
 
             batch_merge_subs(
-                sub_dir,
-                ost_dir,
+                sub_files,
+                ost_files,
                 save_path
             )
 
@@ -2310,25 +2382,21 @@ class Window(LayoutLineWidget):
 
 
     def generate_ost(self, event):
-        if not self.ost_audit_files_list:
-            self.gen_ost_errors += 'ERROR: Cannot generate OSTs. Please select at least one audit file.\n'
-        if not self.save_gen_ost_dir:
-            self.gen_ost_errors += 'ERROR: Cannot generate OSTs. Please select a directory to save the generated OSTs.\n'
+        ost_doc_files = self.get_files(self.file_list_4)
+        save_path = self.get_save_dir(self.opt_1_tab_3_save_edit)
 
-        if not self.gen_ost_errors:
-            # text = 'Generating OSTs files from...\n'
-            # for file_name in self.ost_audit_files_list:
-            #     text += '\n'
-            #     text += file_name
-            # text += '\n\n'
-            # text += 'Saving to...\n'
-            # text += self.save_gen_ost_dir
-            # self.generation_messages.setPlainText(text)
+        errors = ''
 
+        if not ost_doc_files:
+            errors += 'ERROR: Cannot generate OSTs. Please add at least one audit file.\n'
+        if not save_path:
+            errors += 'ERROR: Cannot generate OSTs. Please select a directory to save the generated OSTs.\n'
+
+        if not errors:
             single_files = []
             multi_files = []
 
-            for file_name in self.ost_audit_files_list:
+            for file_name in ost_doc_files:
                 if check_OST_audit(file_name):
                     single_files.append(file_name)
                 else:
@@ -2336,30 +2404,93 @@ class Window(LayoutLineWidget):
 
             success = False
 
-            print(single_files)
-            print(multi_files)
-
             if single_files and multi_files:
                 pass
             elif single_files:
                 for file_name in single_files:
-                    get_OSTs_single(file_name, self.save_gen_ost_dir)
+                    get_OSTs_single(file_name, save_path)
                 success = True
-                single_files = []
-            elif multi_files:
-                get_OSTs(multi_files    , self.save_gen_ost_dir)
-                success = True
-                multi_files = []
+                
 
-            self.ost_audit_files_list = []
+            elif multi_files:
+                get_OSTs(multi_files, save_path)
+                success = True
+                
 
             if success:
-                text = 'OSTs generated successfully'
+                info_modal = QMessageBox.information(
+                    self,
+                    'Finished',
+                    'OST files generated successfully.'
+                )
 
-            self.generation_messages.setPlainText(text)
         else:
-            self.generation_messages.setPlainText(self.gen_ost_errors)
-            self.gen_ost_errors = ''
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                errors
+            )
+
+
+
+
+
+
+
+
+
+
+
+        # if not self.ost_audit_files_list:
+        #     self.gen_ost_errors += 'ERROR: Cannot generate OSTs. Please select at least one audit file.\n'
+        # if not self.save_gen_ost_dir:
+        #     self.gen_ost_errors += 'ERROR: Cannot generate OSTs. Please select a directory to save the generated OSTs.\n'
+
+        # if not self.gen_ost_errors:
+        #     # text = 'Generating OSTs files from...\n'
+        #     # for file_name in self.ost_audit_files_list:
+        #     #     text += '\n'
+        #     #     text += file_name
+        #     # text += '\n\n'
+        #     # text += 'Saving to...\n'
+        #     # text += self.save_gen_ost_dir
+        #     # self.generation_messages.setPlainText(text)
+
+        #     single_files = []
+        #     multi_files = []
+
+        #     for file_name in self.ost_audit_files_list:
+        #         if check_OST_audit(file_name):
+        #             single_files.append(file_name)
+        #         else:
+        #             multi_files.append(file_name)
+
+        #     success = False
+
+        #     print(single_files)
+        #     print(multi_files)
+
+        #     if single_files and multi_files:
+        #         pass
+        #     elif single_files:
+        #         for file_name in single_files:
+        #             get_OSTs_single(file_name, self.save_gen_ost_dir)
+        #         success = True
+        #         single_files = []
+        #     elif multi_files:
+        #         get_OSTs(multi_files    , self.save_gen_ost_dir)
+        #         success = True
+        #         multi_files = []
+
+        #     self.ost_audit_files_list = []
+
+        #     if success:
+        #         text = 'OSTs generated successfully'
+
+        #     self.generation_messages.setPlainText(text)
+        # else:
+        #     self.generation_messages.setPlainText(self.gen_ost_errors)
+        #     self.gen_ost_errors = ''
         
     def run_qc(self, event):
         if not self.qc_files_dir:
