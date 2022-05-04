@@ -60,11 +60,13 @@ def batch_merge_subs(file_dir_one, file_dir_two, save_dir):
         name, ext = os.path.splitext(item)
         if ext == '.vtt':
             sub_list_one.append(item)
+        print(item)
 
     for item in file_list_two:
         name, ext = os.path.splitext(item)
         if ext == '.vtt':
             sub_list_two.append(item)
+        print(item)
 
     for i, file_name in enumerate(sub_list_one):
         full_file_one = file_dir_one + '/' + sub_list_one[i]

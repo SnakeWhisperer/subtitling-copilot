@@ -545,53 +545,140 @@ class Window(LayoutLineWidget):
         # self.messages.setReadOnly(True)
         # self.opt_1_tab_1_layout.addWidget(self.messages, 8, 0, 1, 2)
 
+
+
         # CONTENTS OF THE SECOND TAB IN OPTION 1
-        self.opt_1_tab_2_layout = QGridLayout(self.opt_1_tab_2)
+        # self.opt_1_tab_2_layout = QGridLayout(self.opt_1_tab_2)
+        self.opt_1_tab_2_layout = QVBoxLayout(self.opt_1_tab_2)
+
         self.input_2_label = QLabel('Subtitle Files', objectName='sub_title')
-        self.input_2_label.setContentsMargins(0, 0, 100, 10)
-        self.opt_1_tab_2_layout.addWidget(self.input_2_label, 0, 0)
-
-        # self.file_list_2 = QListWidget()
+        self.opt_1_tab_2_layout.addWidget(self.input_2_label)
+        self.opt_1_tab_2_files_layout_1 = QHBoxLayout()
+        self.opt_1_tab_2_layout.addLayout(self.opt_1_tab_2_files_layout_1)
         self.file_list_2 = DropList(['.vtt', '.srt'])
-        self.opt_1_tab_2_layout.addWidget(self.file_list_2, 1, 0)
+        self.file_list_2.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+        self.opt_1_tab_2_files_layout_1.addWidget(self.file_list_2)
+        self.opt_1_tab_2_files_browse_layout_1 = QVBoxLayout()
+        self.opt_1_tab_2_files_layout_1.addLayout(self.opt_1_tab_2_files_browse_layout_1)
+        self.opt_1_tab_2_add_1 = QPushButton('Add...', objectName='browse')
+        self.opt_1_tab_2_remove_1 = QPushButton('Remove', objectName='browse')
+        self.opt_1_tab_2_clear_1 = QPushButton('Clear', objectName='browse')
 
-        self.list_2_browse = QPushButton('Browse...', objectName='browse')
-        self.opt_1_tab_2_layout.addWidget(self.list_2_browse, 1, 1, QtCore.Qt.AlignBottom)
+        self.opt_1_tab_2_files_browse_layout_1.addWidget(self.opt_1_tab_2_add_1)
+        self.opt_1_tab_2_files_browse_layout_1.addWidget(self.opt_1_tab_2_remove_1)
+        self.opt_1_tab_2_files_browse_layout_1.addWidget(self.opt_1_tab_2_clear_1)
+        self.opt_1_tab_2_files_browse_layout_1.addStretch()
 
         self.input_3_label = QLabel('OST Files', objectName='sub_title')
         self.input_3_label.setContentsMargins(0, 0, 100, 10)
-        self.opt_1_tab_2_layout.addWidget(self.input_3_label, 2, 0)
+        self.opt_1_tab_2_layout.addWidget(self.input_3_label)
 
-        # self.file_list_3 = QListWidget()
+        self.opt_1_tab_2_files_layout_2 = QHBoxLayout()
+        self.opt_1_tab_2_layout.addLayout(self.opt_1_tab_2_files_layout_2)
         self.file_list_3 = DropList(['.vtt', '.srt'])
-        self.opt_1_tab_2_layout.addWidget(self.file_list_3, 3, 0)
+        self.file_list_3.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+        self.opt_1_tab_2_files_layout_2.addWidget(self.file_list_3)
+        self.opt_1_tab_2_files_browse_layout_2 = QVBoxLayout()
+        self.opt_1_tab_2_files_layout_2.addLayout(self.opt_1_tab_2_files_browse_layout_2)
+        self.opt_1_tab_2_add_2 = QPushButton('Add...', objectName='browse')
+        self.opt_1_tab_2_remove_2 = QPushButton('Remove', objectName='browse')
+        self.opt_1_tab_2_clear_2 = QPushButton('Clear', objectName='browse')
 
-        self.list_3_browse = QPushButton('Browse...', objectName='browse')
-        self.opt_1_tab_2_layout.addWidget(self.list_3_browse, 3, 1, QtCore.Qt.AlignBottom)
+        self.opt_1_tab_2_files_browse_layout_2.addWidget(self.opt_1_tab_2_add_2)
+        self.opt_1_tab_2_files_browse_layout_2.addWidget(self.opt_1_tab_2_remove_2)
+        self.opt_1_tab_2_files_browse_layout_2.addWidget(self.opt_1_tab_2_clear_2)
+        self.opt_1_tab_2_files_browse_layout_2.addStretch()
 
-        self.save_layout_widget_1 = QWidget()
-        self.opt_1_tab_2_layout.addWidget(self.save_layout_widget_1, 4, 0)
-        self.save_layout_1 = QHBoxLayout(self.save_layout_widget_1)
-        self.save_layout_1.setContentsMargins(0, 10, 0, 10)
-        self.save_label_1 = QLabel('Save new files to:', objectName='bold_label')
-        self.save_layout_1.addWidget(self.save_label_1)
-        self.save_edit_1 = QLineEdit()
-        self.save_edit_1.setReadOnly(True)
-        self.save_edit_1.setTextMargins(0, 0, 0, 0)
-        self.save_layout_1.addWidget(self.save_edit_1)
-        self.browse_save_1 = QPushButton('Browse...', objectName='browse')
-        self.save_layout_1.addWidget(self.browse_save_1)
-        self.save_layout_1.addStretch()
+        self.opt_1_tab_2_save_layout = QHBoxLayout()
+        self.opt_1_tab_2_layout.addLayout(self.opt_1_tab_2_save_layout)
+
+        self.opt_1_tab_2_save_label = QLabel('Save new files to:', objectName='bold_label')
+        self.opt_1_tab_2_save_layout.addWidget(self.opt_1_tab_2_save_label)
+        self.opt_1_tab_2_save_edit = QLineEdit()
+        self.opt_1_tab_2_save_edit.setReadOnly(True)
+        self.opt_1_tab_2_save_edit.setTextMargins(0, 0, 0, 0)
+        self.opt_1_tab_2_save_layout.addWidget(self.opt_1_tab_2_save_edit)
+        self.opt_1_tab_2_browse_save = QPushButton('Browse...', objectName='browse')
+        self.opt_1_tab_2_save_layout.addWidget(self.opt_1_tab_2_browse_save)
+        self.opt_1_tab_2_save_layout.addStretch()
+        self.opt_1_tab_2_save_layout.setContentsMargins(0, 10, 0, 10)
 
         self.checkbox_3 = QCheckBox('Overwrite subtitle files')
-        self.opt_1_tab_2_layout.addWidget(self.checkbox_3, 5, 0)
-
+        self.opt_1_tab_2_layout.addWidget(self.checkbox_3, 0, QtCore.Qt.AlignLeft)
+        
         self.merge_ost_button = QPushButton('Merge', objectName='run')
-        self.opt_1_tab_2_layout.addWidget(self.merge_ost_button, 6, 1)
+        self.opt_1_tab_2_layout.addWidget(self.merge_ost_button, 0, QtCore.Qt.AlignRight)
 
-        self.merge_messages = QPlainTextEdit()
-        self.merge_messages.setReadOnly(True)
-        self.opt_1_tab_2_layout.addWidget(self.merge_messages, 7, 0, 1, 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # self.input_2_label = QLabel('Subtitle Files', objectName='sub_title')
+        # self.input_2_label.setContentsMargins(0, 0, 100, 10)
+        # self.opt_1_tab_2_layout.addWidget(self.input_2_label, 0, 0)
+
+        # # self.file_list_2 = QListWidget()
+        # self.file_list_2 = DropList(['.vtt', '.srt'])
+        # self.opt_1_tab_2_layout.addWidget(self.file_list_2, 1, 0)
+
+        # self.list_2_browse = QPushButton('Browse...', objectName='browse')
+        # self.opt_1_tab_2_layout.addWidget(self.list_2_browse, 1, 1, QtCore.Qt.AlignBottom)
+
+        # self.input_3_label = QLabel('OST Files', objectName='sub_title')
+        # self.input_3_label.setContentsMargins(0, 0, 100, 10)
+        # self.opt_1_tab_2_layout.addWidget(self.input_3_label, 2, 0)
+
+        # # self.file_list_3 = QListWidget()
+        # self.file_list_3 = DropList(['.vtt', '.srt'])
+        # self.opt_1_tab_2_layout.addWidget(self.file_list_3, 3, 0)
+
+        # self.list_3_browse = QPushButton('Browse...', objectName='browse')
+        # self.opt_1_tab_2_layout.addWidget(self.list_3_browse, 3, 1, QtCore.Qt.AlignBottom)
+
+        # self.save_layout_widget_1 = QWidget()
+        # self.opt_1_tab_2_layout.addWidget(self.save_layout_widget_1, 4, 0)
+        # self.save_layout_1 = QHBoxLayout(self.save_layout_widget_1)
+        # self.save_layout_1.setContentsMargins(0, 10, 0, 10)
+        # self.save_label_1 = QLabel('Save new files to:', objectName='bold_label')
+        # self.save_layout_1.addWidget(self.save_label_1)
+        # self.save_edit_1 = QLineEdit()
+        # self.save_edit_1.setReadOnly(True)
+        # self.save_edit_1.setTextMargins(0, 0, 0, 0)
+        # self.save_layout_1.addWidget(self.save_edit_1)
+        # self.browse_save_1 = QPushButton('Browse...', objectName='browse')
+        # self.save_layout_1.addWidget(self.browse_save_1)
+        # self.save_layout_1.addStretch()
+
+        # self.checkbox_3 = QCheckBox('Overwrite subtitle files')
+        # self.opt_1_tab_2_layout.addWidget(self.checkbox_3, 5, 0)
+
+        # self.merge_ost_button = QPushButton('Merge', objectName='run')
+        # self.opt_1_tab_2_layout.addWidget(self.merge_ost_button, 6, 1)
+
+        # self.merge_messages = QPlainTextEdit()
+        # self.merge_messages.setReadOnly(True)
+        # self.opt_1_tab_2_layout.addWidget(self.merge_messages, 7, 0, 1, 2)
 
         # CONTENTS OF THE THIRD TAB IN OPTION 1
         self.opt_1_tab_3_layout = QGridLayout(self.opt_1_tab_3)
@@ -1269,10 +1356,17 @@ class Window(LayoutLineWidget):
         self.opt_1_tab_1_browse_save.clicked.connect(self.browse_save_dir)
         self.extract_ost_button.clicked.connect(self.extract_ost)
 
-        self.list_2_browse.clicked.connect(self.browse_list_1)
-        self.list_3_browse.clicked.connect(self.browse_list_2)
-        self.browse_save_1.clicked.connect(self.browse_save_dir)
-        self.merge_ost_button.clicked.connect(self.merge_ost)
+        # self.list_2_browse.clicked.connect(self.browse_list_1)
+        # self.list_3_browse.clicked.connect(self.browse_list_2)
+        # self.browse_save_1.clicked.connect(self.browse_save_dir)
+        self.opt_1_tab_2_add_1.clicked.connect(self.add_files)
+        self.opt_1_tab_2_remove_1.clicked.connect(self.remove_files)
+        self.opt_1_tab_2_clear_1.clicked.connect(self.clear_files)
+        self.opt_1_tab_2_add_2.clicked.connect(self.add_files)
+        self.opt_1_tab_2_remove_2.clicked.connect(self.remove_files)
+        self.opt_1_tab_2_clear_2.clicked.connect(self.clear_files)
+        self.opt_1_tab_2_browse_save.clicked.connect(self.browse_save_dir)
+        self.merge_ost_button.clicked.connect(self.merge_ost)        
 
         self.list_4_browse.clicked.connect(self.browse_list_3)
         self.browse_save_2.clicked.connect(self.browse_save_dir)
@@ -1382,6 +1476,10 @@ class Window(LayoutLineWidget):
                 drop_list = self.file_list_1
             elif self.content.currentWidget().currentIndex() == 1:
                 supported_formats = '*.vtt'
+                if self.sender() == self.opt_1_tab_2_add_1:
+                    drop_list = self.file_list_2
+                elif self.sender() == self.opt_1_tab_2_add_2:
+                    drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
                 supported_formats = '*.vtt'
 
@@ -1435,7 +1533,10 @@ class Window(LayoutLineWidget):
             if self.content.currentWidget().currentIndex() == 0:
                 drop_list = self.file_list_1
             elif self.content.currentWidget().currentIndex() == 1:
-                pass
+                if self.sender() == self.opt_1_tab_2_remove_1:
+                    drop_list = self.file_list_2
+                elif self.sender() == self.opt_1_tab_2_remove_2:
+                    drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
                 pass
 
@@ -1450,7 +1551,10 @@ class Window(LayoutLineWidget):
             if self.content.currentWidget().currentIndex() == 0:
                 drop_list = self.file_list_1
             elif self.content.currentWidget().currentIndex() == 1:
-                pass
+                if self.sender() == self.opt_1_tab_2_clear_1:
+                    drop_list = self.file_list_2
+                elif self.sender() == self.opt_1_tab_2_clear_2:
+                    drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
                 pass
 
@@ -1814,8 +1918,8 @@ class Window(LayoutLineWidget):
 
             elif self.content.currentWidget().currentIndex() == 1:
                 self.save_merged_ost_dir = save_dir
-                self.save_edit_1.clear()
-                self.save_edit_1.insert(self.save_merged_ost_dir)
+                self.opt_1_tab_2_save_edit.clear()
+                self.opt_1_tab_2_save_edit.insert(self.save_merged_ost_dir)
 
             elif self.content.currentWidget().currentIndex() == 2:
                 self.save_gen_ost_dir = save_dir
@@ -2041,30 +2145,25 @@ class Window(LayoutLineWidget):
         
 
     def extract_ost(self, event):
-        
-        if not self.extract_ost_files_list:
-            self.extract_ost_errors += 'ERROR: Cannot extract OSTs. Please select at least one subtitle file.\n'
-        if not self.save_extracted_ost_dir:
-            self.extract_ost_errors += 'ERROR: Cannot save OSTs. Please select a directory for the OST files.'
-        
-        if not self.extract_ost_errors:
-            # text = 'Extracting OSTs files with...\n'
-            # for file_name in self.extract_ost_files_list:
-            #     text += '\n'
-            #     text += file_name
-            # text += '\n\n'
-            # text += 'Saving to...\n'
-            # text += self.save_extracted_ost_dir
-            text = 'OSTs extracted successfully.'
 
-            ost_lang_path = '/'.join(self.extract_ost_files_list[0].split('/')[:-1])
+        files = self.get_files(self.file_list_1)
+        save_path = self.get_save_dir(self.opt_1_tab_1_save_edit)
 
+        errors = ''
+
+        if not files:
+            errors += 'ERROR: Cannot extract OSTs. Please add at least one subtitle file.\n\n'
+        if not save_path:
+            errors += 'ERROR: Cannot save OSTs. Please select a directory for the OST files.'
+
+        if not errors:
+            ost_lang_path = '/'.join(files[0].split('/')[:-1])
 
             total_errors = batch_extract_OSTs(
                 ost_lang_path,
-                self.save_extracted_ost_dir,
-                save_OSTs=self.checkbox_1.isChecked(),
-                delete_OSTs=self.checkbox_2.isChecked()
+                save_path,
+                save_OSTs=self.opt_1_tab_1_checkbox_1.isChecked(),
+                delete_OSTs=self.opt_1_tab_1_checkbox_2.isChecked()
             )
 
             if total_errors:
@@ -2072,51 +2171,142 @@ class Window(LayoutLineWidget):
 
                 if warnings:
                     warnings_string = ''
-                    for warning_key in warnings.keys():
+                    for warning_key in warning.keys():
                         warnings_string += 'Warnings\n\n\n'
-                        warnings_string += warning_key + '\n\t'
-                        warnings_string += warnings[warning_key] + '\n'
+                        warnings_string += f'{warning_key}\n\t'
+                        warnings_string += f'{warnings[warning_key]}\n'
 
-                    self.messages.setPlainText(warnings_string)
+            else:
+                info_modal = QMessageBox.information(
+                    self,
+                    'Finished',
+                    'OSTs extracted successfully.'
+                )
 
-            self.messages.setPlainText(text)
         else:
-            self.messages.setPlainText(self.extract_ost_errors)
-            self.extract_ost_errors = ''
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                errors,
+            )
+
+        
+        # if not self.extract_ost_files_list:
+        #     self.extract_ost_errors += 'ERROR: Cannot extract OSTs. Please select at least one subtitle file.\n'
+        # if not self.save_extracted_ost_dir:
+        #     self.extract_ost_errors += 'ERROR: Cannot save OSTs. Please select a directory for the OST files.'
+        
+        # if not self.extract_ost_errors:
+        #     # text = 'Extracting OSTs files with...\n'
+        #     # for file_name in self.extract_ost_files_list:
+        #     #     text += '\n'
+        #     #     text += file_name
+        #     # text += '\n\n'
+        #     # text += 'Saving to...\n'
+        #     # text += self.save_extracted_ost_dir
+        #     text = 'OSTs extracted successfully.'
+
+        #     ost_lang_path = '/'.join(self.extract_ost_files_list[0].split('/')[:-1])
+
+
+        #     total_errors = batch_extract_OSTs(
+        #         ost_lang_path,
+        #         self.save_extracted_ost_dir,
+        #         save_OSTs=self.checkbox_1.isChecked(),
+        #         delete_OSTs=self.checkbox_2.isChecked()
+        #     )
+
+        #     if total_errors:
+        #         warnings, errors = total_errors
+
+        #         if warnings:
+        #             warnings_string = ''
+        #             for warning_key in warnings.keys():
+        #                 warnings_string += 'Warnings\n\n\n'
+        #                 warnings_string += warning_key + '\n\t'
+        #                 warnings_string += warnings[warning_key] + '\n'
+
+        #             self.messages.setPlainText(warnings_string)
+
+        #     self.messages.setPlainText(text)
+        # else:
+        #     self.messages.setPlainText(self.extract_ost_errors)
+        #     self.extract_ost_errors = ''
 
 
     def merge_ost(self, event):
-        if not self.merge_subtitle_files_list:
-            self.merge_ost_errors += 'ERROR: Cannot merge OSTs. Please select at least one subtitle file.\n'
-        if not self.merge_ost_files_list:
-            self.merge_ost_errors += 'ERROR: Cannot merge OSTs. Please select at least one OST file.\n'
-        if (len(self.merge_subtitle_files_list)
-            != len(self.merge_ost_files_list)):
-            # Different number of files.
-            self.merge_ost_errors += 'ERROR: Cannot merge OSTs. The number of subtitle files is different from the number of OST files.\n'
-        if not self.save_merged_ost_dir and not self.checkbox_3.isChecked():
-            self.merge_ost_errors += 'ERROR: Cannot save Subtitle file(s). Please select a directory for the subtitle files.'
-        
-        if not self.merge_ost_errors:
-            self.merge_messages.setPlainText('Merging...')
-            sub_dir = '/'.join(self.merge_subtitle_files_list[0].split('/')[:-1])
-            ost_dir = '/'.join(self.merge_ost_files_list[0].split('/')[:-1])
 
-            
+        sub_files = self.get_files(self.file_list_2)
+        ost_files = self.get_files(self.file_list_3)
+        save_path = self.get_save_dir(self.opt_1_tab_2_save_edit)
+
+        errors = ''
+
+        if not sub_files:
+            errors += 'ERROR: Cannot merge OSTs. Please add at least one subtitle file.\n\n'
+        if not ost_files:
+            errors += 'ERROR: Cannot merge OSTs. Please add at least one OST file.\n\n'
+        if not save_path:
+            errors += 'ERROR: Cannot save OSTs. Please select a directory for the new files.'
+
+        
+        if not errors:
+            sub_dir = '/'.join(sub_files[0].split('/')[:-1])
+            ost_dir = '/'.join(ost_files[0].split('/')[:-1])
+
             if self.checkbox_3.isChecked():
-                self.save_merged_ost_dir = sub_dir
+                save_path = sub_dir
 
             batch_merge_subs(
                 sub_dir,
                 ost_dir,
-                self.save_merged_ost_dir
+                save_path
             )
 
-            text = 'Files merged successfully'
-            self.merge_messages.setPlainText(text)
+            info_modal = QMessageBox.information(
+                self,
+                'Finished',
+                'Files merged successfully'
+            )
+
         else:
-            self.merge_messages.setPlainText(self.merge_ost_errors)
-            self.merge_ost_errors = ''
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                errors,
+            )
+
+        # if not self.merge_subtitle_files_list:
+        #     self.merge_ost_errors += 'ERROR: Cannot merge OSTs. Please select at least one subtitle file.\n'
+        # if not self.merge_ost_files_list:
+        #     self.merge_ost_errors += 'ERROR: Cannot merge OSTs. Please select at least one OST file.\n'
+        # if (len(self.merge_subtitle_files_list)
+        #     != len(self.merge_ost_files_list)):
+        #     # Different number of files.
+        #     self.merge_ost_errors += 'ERROR: Cannot merge OSTs. The number of subtitle files is different from the number of OST files.\n'
+        # if not self.save_merged_ost_dir and not self.checkbox_3.isChecked():
+        #     self.merge_ost_errors += 'ERROR: Cannot save Subtitle file(s). Please select a directory for the subtitle files.'
+        
+        # if not self.merge_ost_errors:
+        #     self.merge_messages.setPlainText('Merging...')
+        #     sub_dir = '/'.join(self.merge_subtitle_files_list[0].split('/')[:-1])
+        #     ost_dir = '/'.join(self.merge_ost_files_list[0].split('/')[:-1])
+
+            
+        #     if self.checkbox_3.isChecked():
+        #         self.save_merged_ost_dir = sub_dir
+
+        #     batch_merge_subs(
+        #         sub_dir,
+        #         ost_dir,
+        #         self.save_merged_ost_dir
+        #     )
+
+        #     text = 'Files merged successfully'
+        #     self.merge_messages.setPlainText(text)
+        # else:
+        #     self.merge_messages.setPlainText(self.merge_ost_errors)
+        #     self.merge_ost_errors = ''
 
 
     def generate_ost(self, event):
@@ -2446,6 +2636,19 @@ class Window(LayoutLineWidget):
             self.fixes_messages.setPlainText(self.fixes_errors)
             self.fixes_errors = ''
 
+    def get_files(self, drop_list):
+        file_count = drop_list.count()
+        files = [drop_list.item(row).text() for row in range(file_count)]
+
+        return files
+
+    def get_save_dir(self, line_edit):
+        save_dir = line_edit.text()
+
+        return save_dir
+
+    # def mousePressEvent(self, e):
+    #     print(e.button())
 
 # class DropList(QListWidget):
 #     """Subclass of the QListWidget to make it accept drops
