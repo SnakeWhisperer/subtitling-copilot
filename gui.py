@@ -316,7 +316,7 @@ class Window(LayoutLineWidget):
                 border: 1px solid rgba(167, 202, 212, 80);
                 border-radius: 3px;
                 background-color: #1c1b1c;
-                margin-top: 5em;
+                margin-top: 1em;
                 color: #c5cad4;
                 
             }
@@ -426,7 +426,8 @@ class Window(LayoutLineWidget):
         # TAB WIDGETS
         self.welcome_widget = QWidget(objectName='Welcome')
         self.opt_1_page_cont = QTabWidget(objectName='Option1tabs')
-        self.opt_2_page_cont = QWidget(objectName='Option-2-tabs')
+        # self.opt_2_page_cont = QWidget(objectName='Option-2-tabs')
+        self.opt_2_page_cont = QTabWidget(objectName='Option-2-tabs')
         self.opt_3_page_cont = QWidget(objectName='Option-3-tabs')
         # self.opt_4_page_cont = QTabWidget(objectName='Option-4-tabs')
         self.opt_4_page_cont = QWidget(objectName='Option-4-tabs')
@@ -781,16 +782,28 @@ class Window(LayoutLineWidget):
         # self.opt_1_tab_3_layout.addWidget(self.generation_messages, 4, 0, 1, 2)
 
 
-        # OPTION 2 CONTENTS
+        
 
-        self.qc_layout_1 = QVBoxLayout(self.opt_2_page_cont)
+        # OPTION 2 CONTENTS
+        self.opt_2_page_cont.setTabPosition(tab_position)
+        self.opt_2_page_cont.setTabShape(tab_shape)
+
+        # TABS FOR OPTION 2
+        self.opt_2_tab_1 = QWidget()
+        self.opt_2_tab_2 = QWidget()
+
+        self.opt_2_page_cont.addTab(self.opt_2_tab_1, 'Files and Settings')
+        self.opt_2_page_cont.addTab(self.opt_2_tab_2, 'Results')
+
+        # self.qc_layout_1 = QVBoxLayout(self.opt_2_page_cont)
+        self.qc_layout_1 = QVBoxLayout(self.opt_2_tab_1)
         # self.qc_header = QLabel('Batch Quality Check', objectName='header_1')
         # self.qc_header.setContentsMargins(0, 0, 0, 0)
         # self.qc_layout_1.addWidget(self.qc_header)
 
 
         self.qc_files_label = QLabel('Subtitle Files Directory', objectName='bold_label')
-        self.qc_files_label.setContentsMargins(0, 10, 0, 0)
+        self.qc_files_label.setContentsMargins(0, 30, 0, 0)
         self.qc_layout_1.addWidget(self.qc_files_label)
         self.add_qc_files_layout = QHBoxLayout()
         self.qc_layout_1.addLayout(self.add_qc_files_layout)
@@ -829,7 +842,7 @@ class Window(LayoutLineWidget):
 
 
         self.qc_setts_label = QLabel('Settings', objectName='header_2')
-        self.qc_setts_label.setContentsMargins(0, 30, 0, 30)
+        self.qc_setts_label.setContentsMargins(0, 70, 0, 30)
         self.qc_layout_1.addWidget(self.qc_setts_label)
         self.qc_setts_layout = QGridLayout()
         self.qc_layout_1.addLayout(self.qc_setts_layout)
@@ -936,10 +949,18 @@ class Window(LayoutLineWidget):
 
 
         self.run_qc_button = QPushButton('Run', objectName='run')
+        self.run_qc_button.setContentsMargins(0, 40, 0, 0)
         self.qc_layout_1.addWidget(self.run_qc_button, 0, QtCore.Qt.AlignRight)
+        self.qc_layout_1.addStretch()
+
+        self.qc_layout_2 = QVBoxLayout(self.opt_2_tab_2)
+        self.qc_results_label = QLabel('Quality Check Results', objectName='bold_label')
+        self.qc_results_label.setContentsMargins(0, 10, 0, 0)
+        self.qc_layout_2.addWidget(self.qc_results_label, 0)
         self.qc_messages = QPlainTextEdit()
+        self.qc_messages.setContentsMargins(0, 10, 0, 0)
         self.qc_messages.setReadOnly(True)
-        self.qc_layout_1.addWidget(self.qc_messages)
+        self.qc_layout_2.addWidget(self.qc_messages, 0)
         
 
         # OPTION 3 CONTENTS
@@ -2551,6 +2572,7 @@ class Window(LayoutLineWidget):
             print(report)
 
             self.qc_messages.setPlainText('\n'.join(report))
+            self.opt_2_page_cont.setCurrentIndex(1)
             
         else:
             
