@@ -973,10 +973,21 @@ class Window(LayoutLineWidget):
         self.issues_layout.addLayout(self.add_target_files_layout)
         # self.target_files_list = QListWidget()
         self.target_files_list = DropList(['.vtt', 'srt'])
+        self.target_files_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         # self.target_files_list.setReadOnly(True)
         self.add_target_files_layout.addWidget(self.target_files_list)
-        self.browse_target_files = QPushButton('Browse...', objectName='browse')
-        self.add_target_files_layout.addWidget(self.browse_target_files, 0, QtCore.Qt.AlignBottom)
+        self.target_files_browse_layout = QVBoxLayout()
+        self.add_target_files_layout.addLayout(self.target_files_browse_layout)
+        self.add_target_files = QPushButton('Add...', objectName='browse')
+        self.remove_target_files = QPushButton('Remove', objectName='browse')
+        self.clear_target_files = QPushButton('Clear', objectName='browse')
+        self.target_files_browse_layout.addWidget(self.add_target_files)
+        self.target_files_browse_layout.addWidget(self.remove_target_files)
+        self.target_files_browse_layout.addWidget(self.clear_target_files)
+        self.target_files_browse_layout.addStretch()
+        
         # self.add_target_files_layout.addStretch()
 
         self.issues_file_label_2 = QLabel('Source Language Files', objectName='sub_title')
@@ -985,10 +996,20 @@ class Window(LayoutLineWidget):
         self.issues_layout.addLayout(self.add_source_files_layout)
         # self.source_files_list = QListWidget()
         self.source_files_list = DropList(['.vtt', '.srt'])
+        self.source_files_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         # self.source_files_list.setReadOnly(True)
         self.add_source_files_layout.addWidget(self.source_files_list)
-        self.browse_source_files = QPushButton('Browse...', objectName='browse')
-        self.add_source_files_layout.addWidget(self.browse_source_files, 0, QtCore.Qt.AlignBottom)
+        self.source_files_browse_layout = QVBoxLayout()
+        self.add_source_files_layout.addLayout(self.source_files_browse_layout)
+        self.add_source_files = QPushButton('Add...', objectName='browse')
+        self.remove_source_files = QPushButton('Remove', objectName='browse')
+        self.clear_source_files = QPushButton('Clear', objectName='browse')
+        self.source_files_browse_layout.addWidget(self.add_source_files)
+        self.source_files_browse_layout.addWidget(self.remove_source_files)
+        self.source_files_browse_layout.addWidget(self.clear_source_files)
+        self.source_files_browse_layout.addStretch()
         # self.add_source_files_layout.addStretch()
 
         self.save_issues_label = QLabel('Save Spreadsheet To', objectName='sub_title')
@@ -1003,9 +1024,9 @@ class Window(LayoutLineWidget):
 
         self.issues_gen_button = QPushButton('Generate', objectName='run')
         self.issues_layout.addWidget(self.issues_gen_button, 0, QtCore.Qt.AlignRight)
-        self.issues_messages = QPlainTextEdit()
-        self.issues_messages.setReadOnly(True)
-        self.issues_layout.addWidget(self.issues_messages)
+        # self.issues_messages = QPlainTextEdit()
+        # self.issues_messages.setReadOnly(True)
+        # self.issues_layout.addWidget(self.issues_messages)
 
 
         # OPTION 4 CONTENTS
@@ -1470,8 +1491,13 @@ class Window(LayoutLineWidget):
         self.save_report_browse.clicked.connect(self.save_single_file)
         self.run_qc_button.clicked.connect(self.run_qc)
 
-        self.browse_target_files.clicked.connect(self.browse_list_1)
-        self.browse_source_files.clicked.connect(self.browse_list_2)
+        self.add_target_files.clicked.connect(self.add_files)
+        self.remove_target_files.clicked.connect(self.remove_files)
+        self.clear_target_files.clicked.connect(self.clear_files)
+        self.add_source_files.clicked.connect(self.add_files)
+        self.remove_source_files.clicked.connect(self.remove_files)
+        self.clear_source_files.clicked.connect(self.clear_files)
+        # self.browse_source_files.clicked.connect(self.browse_list_2)
         self.save_issues_browse.clicked.connect(self.save_issues_file)
         self.issues_gen_button.clicked.connect(self.generate_issue_sheet)
 
@@ -1562,6 +1588,7 @@ class Window(LayoutLineWidget):
 
 
     def add_files(self, event):
+        print(self.content.currentIndex())
         if self.content.currentIndex() == 1:
             if self.content.currentWidget().currentIndex() == 0:
                 supported_formats = '*.vtt'
@@ -1575,6 +1602,13 @@ class Window(LayoutLineWidget):
             elif self.content.currentWidget().currentIndex() == 2:
                 supported_formats = '*.docx'
                 drop_list = self.file_list_4
+
+        elif self.content.currentIndex() == 3:
+            supported_formats = '*.vtt'
+            if self.sender() == self.add_target_files:
+                drop_list = self.target_files_list
+            elif self.sender() == self.add_source_files:
+                drop_list = self.source_files_list
 
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
@@ -1633,6 +1667,12 @@ class Window(LayoutLineWidget):
             elif self.content.currentWidget().currentIndex() == 2:
                 drop_list = self.file_list_4
 
+        elif self.content.currentIndex() == 3:
+            if self.sender() == self.remove_target_files:
+                drop_list = self.target_files_list
+            elif self.sender() == self.remove_source_files:
+                drop_list = self.source_files_list
+
         selected_list = drop_list.selectedItems()
 
         for item in selected_list:
@@ -1650,6 +1690,13 @@ class Window(LayoutLineWidget):
                     drop_list = self.file_list_3
             elif self.content.currentWidget().currentIndex() == 2:
                 drop_list = self.file_list_4
+
+        elif self.content.currentIndex() == 3:
+            if self.sender() == self.clear_target_files:
+                drop_list = self.target_files_list
+            elif self.sender() == self.clear_source_files:
+                drop_list = self.source_files_list
+
 
         drop_list.clear()
 
@@ -2581,47 +2628,90 @@ class Window(LayoutLineWidget):
 
 
     def generate_issue_sheet(self, event):
-        if not self.issues_tar_list:
-            self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select at least one target language subtitle file.\n'
-        if not self.issues_en_list:
-            self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select at least one source language subtitle file.\n'
-        if (self.issues_tar_list and self.issues_en_list
-            and (len(self.issues_tar_list) != len(self.issues_en_list))):
+        target_files = self.get_files(self.target_files_list)
+        source_files = self.get_files(self.source_files_list)
+        save_path = self.get_save_dir(self.save_sheet_entry)
+
+        errors = ''
+
+        if not target_files:
+            errors += 'ERROR: Cannot generate issues sheet. Please add at least one target language subtitle file.\n\n'
+        if not source_files:
+            errors += 'ERROR: Cannot generate issues sheet. Please add at least one source language subtitle file.\n\n'
+        if (target_files and source_files
+            and (len(target_files) != len(source_files))):
             # Different numbers of files
-            self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select the same number of targe and source language files.\n'
-        if not self.issues_sheet_name:
-            self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select a file name for the spreadsheet.'
+            errors += 'ERROR: Cannot generate issues sheet. Please select the same number of targe and source language files.\n\n'
+        if not save_path:
+            errors += 'ERROR: Cannot generate issues sheet. Please select a file name for the spreadsheet.'
 
-        if not self.issues_errors:
-            # text = 'Generating issue spreadsheet for target files...\n'
-            # for file_name in self.issues_tar_list:
-            #     text += '\n'
-            #     text += file_name
-            # text += '\nAnd source files...\n'
-            # for file_name in self.issues_en_list:
-            #     text += '\n'
-            #     text += file_name
-            # text += '\n\n'
-            # text += 'Saving to...\n'
-            # text += self.issues_sheet_name
 
-            en_path = '/'.join(self.issues_en_list[0].split('/')[:-1])
-            tar_path = '/'.join(self.issues_tar_list[0].split('/')[:-1])
-            
+
+        if not errors:
+            en_path = '/'.join(source_files[0].split('/')[:-1])
+            tar_path = '/'.join(target_files[0].split('/')[:-1])
+
             result = batch_gen_CPS_sheet(
-                self.issues_en_list,
-                self.issues_tar_list,
-                self.issues_sheet_name,
+                source_files,
+                target_files,
+                save_path,
                 old=False
             )
 
-            if type(result) == str:
-                self.issues_messages.setPlainText(result)
-            else:
-                self.issues_messages.setPlainText(f'Issue spreadsheet generated successfully.\n{self.issues_sheet_name}')
+            info_modal = QMessageBox.information(
+                self,
+                'Finished',
+                'Issue spreadsheet generated successfully'
+            )
+
         else:
-            self.issues_messages.setPlainText(self.issues_errors)
-            self.issues_errors = ''
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                errors
+            )
+
+        # if not self.issues_tar_list:
+        #     self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select at least one target language subtitle file.\n'
+        # if not self.issues_en_list:
+        #     self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select at least one source language subtitle file.\n'
+        # if (self.issues_tar_list and self.issues_en_list
+        #     and (len(self.issues_tar_list) != len(self.issues_en_list))):
+        #     # Different numbers of files
+        #     self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select the same number of targe and source language files.\n'
+        # if not self.issues_sheet_name:
+        #     self.issues_errors += 'ERROR: Cannot generate issues sheet. Please select a file name for the spreadsheet.'
+
+        # if not self.issues_errors:
+        #     # text = 'Generating issue spreadsheet for target files...\n'
+        #     # for file_name in self.issues_tar_list:
+        #     #     text += '\n'
+        #     #     text += file_name
+        #     # text += '\nAnd source files...\n'
+        #     # for file_name in self.issues_en_list:
+        #     #     text += '\n'
+        #     #     text += file_name
+        #     # text += '\n\n'
+        #     # text += 'Saving to...\n'
+        #     # text += self.issues_sheet_name
+
+        #     en_path = '/'.join(self.issues_en_list[0].split('/')[:-1])
+        #     tar_path = '/'.join(self.issues_tar_list[0].split('/')[:-1])
+            
+        #     result = batch_gen_CPS_sheet(
+        #         self.issues_en_list,
+        #         self.issues_tar_list,
+        #         self.issues_sheet_name,
+        #         old=False
+        #     )
+
+        #     if type(result) == str:
+        #         self.issues_messages.setPlainText(result)
+        #     else:
+        #         self.issues_messages.setPlainText(f'Issue spreadsheet generated successfully.\n{self.issues_sheet_name}')
+        # else:
+        #     self.issues_messages.setPlainText(self.issues_errors)
+        #     self.issues_errors = ''
 
 
     def copy_scene_changes(self, event):
