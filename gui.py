@@ -177,7 +177,7 @@ class Window(LayoutLineWidget):
                 background: #343536;
                 color: #c5cad4;
                 border: none;
-                font-size: 10pt;
+                font-size: 9pt;
                 border-radius: 3px;
                 padding: 5px 10px 5px 10px;
             }
@@ -1391,9 +1391,9 @@ class Window(LayoutLineWidget):
         self.conv_files_buttons_layout = QVBoxLayout()
         self.conv_files_layout.addLayout(self.conv_files_buttons_layout)
 
-        self.add_conv_files_button = QPushButton('Add', objectName='browse1')
-        self.remove_conv_files_button = QPushButton('Remove', objectName='browse1')
-        self.clear_conv_files_button = QPushButton('Clear', objectName='browse1')
+        self.add_conv_files_button = QPushButton('Add', objectName='browse')
+        self.remove_conv_files_button = QPushButton('Remove', objectName='browse')
+        self.clear_conv_files_button = QPushButton('Clear', objectName='browse')
 
         self.conv_files_buttons_layout.addWidget(self.add_conv_files_button)
         self.conv_files_buttons_layout.addWidget(self.remove_conv_files_button)
