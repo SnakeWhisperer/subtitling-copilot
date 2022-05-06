@@ -429,8 +429,8 @@ class Window(LayoutLineWidget):
         # self.opt_2_page_cont = QWidget(objectName='Option-2-tabs')
         self.opt_2_page_cont = QTabWidget(objectName='Option-2-tabs')
         self.opt_3_page_cont = QWidget(objectName='Option-3-tabs')
-        # self.opt_4_page_cont = QTabWidget(objectName='Option-4-tabs')
-        self.opt_4_page_cont = QWidget(objectName='Option-4-tabs')
+        self.opt_4_page_cont = QTabWidget(objectName='Option-4-tabs')
+        # self.opt_4_page_cont = QWidget(objectName='Option-4-tabs')
         self.opt_5_page_cont = QTabWidget(objectName='option_5_tabs')
 
         self.welcome_layout = QVBoxLayout(self.welcome_widget)
@@ -961,6 +961,7 @@ class Window(LayoutLineWidget):
         self.qc_messages.setContentsMargins(0, 10, 0, 0)
         self.qc_messages.setReadOnly(True)
         self.qc_layout_2.addWidget(self.qc_messages, 0)
+        self.qc_messages.setPlainText('No results to show.')
         
 
         # OPTION 3 CONTENTS
@@ -1030,8 +1031,17 @@ class Window(LayoutLineWidget):
 
 
         # OPTION 4 CONTENTS
+        self.opt_4_page_cont.setTabPosition(tab_position)
+        self.opt_4_page_cont.setTabShape(tab_shape)
 
-        self.fixes_layout = QVBoxLayout(self.opt_4_page_cont)
+        self.opt_4_tab_1 = QWidget()
+        self.opt_4_tab_2 = QWidget()
+
+        self.opt_4_page_cont.addTab(self.opt_4_tab_1, 'Files and Settings')
+        self.opt_4_page_cont.addTab(self.opt_4_tab_2, 'Results')
+
+        # self.fixes_layout = QVBoxLayout(self.opt_4_page_cont)
+        self.fixes_layout = QVBoxLayout(self.opt_4_tab_1)
 
         self.fixes_files_label = QLabel('Subtitle Files Directory', objectName='bold_label')
         self.fixes_files_label.setContentsMargins(0, 10, 0, 0)
@@ -1120,9 +1130,7 @@ class Window(LayoutLineWidget):
         self.sort_subs_checkbox = QCheckBox(
             'Sort by start time',
             objectName='fix_sett_check'
-        )       
-
-
+        )
 
         self.fixes_setts_layout.addWidget(self.snap_to_frames_checkbox, 0, 0)
         self.fixes_setts_layout.addWidget(self.fix_TCFOL_checkbox, 1, 0)
@@ -1143,30 +1151,21 @@ class Window(LayoutLineWidget):
         self.fixes_setts_layout.setColumnMinimumWidth(1, 75)
         
         self.run_fixes_button = QPushButton('Run Fixes', objectName='run')
-        self.fixes_messages = QPlainTextEdit()
-        self.fixes_messages.setReadOnly(True)
-
         self.fixes_layout.addWidget(self.run_fixes_button, 0, QtCore.Qt.AlignRight)
-        self.fixes_layout.addWidget(self.fixes_messages, 1)
-        self.fixes_layout.addStretch()
 
+        self.fixes_layout_2 = QVBoxLayout(self.opt_4_tab_2)
+        self.fixes_results_label = QLabel('Fixes results', objectName='bold_label')
+        self.fixes_results_label.setContentsMargins(0, 10, 0, 0)
+        self.fixes_layout_2.addWidget(self.fixes_results_label, 0)
+
+        self.fixes_messages = QPlainTextEdit()
+        self.fixes_messages.setContentsMargins(0, 10, 0, 0)
+        self.fixes_messages.setReadOnly(True)
+        self.fixes_layout_2.addWidget(self.fixes_messages, 1)
+        self.fixes_layout_2.addStretch()
+        self.fixes_messages.setPlainText('No results to show.')
         
-
-        
-        
-
-        
-
-
-
-
-
-
-
-
-
         # OPTION 5 CONTENTS
-
         self.opt_5_page_cont.setTabPosition(tab_position)
         self.opt_5_page_cont.setTabShape(tab_shape)
 
@@ -1198,10 +1197,22 @@ class Window(LayoutLineWidget):
         self.sc_copy_videos_layout = QHBoxLayout()
         self.sc_layout.addLayout(self.sc_copy_videos_layout)
         # self.copy_sc_videos_list = QListWidget()
-        self.copy_sc_videos_list = DropList(['.mp4'])
+        self.copy_sc_videos_list = DropList(['.mp4', '.m4v', '.mpg',
+                                            '.avi', '.mov', '.wmv', '.mkv'])
+        self.copy_sc_videos_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+
         self.sc_copy_videos_layout.addWidget(self.copy_sc_videos_list)
-        self.sc_copy_videos_browse = QPushButton('Browse...', objectName='browse')
-        self.sc_copy_videos_layout.addWidget(self.sc_copy_videos_browse, 0, QtCore.Qt.AlignBottom)
+        self.sc_copy_videos_browse_layout = QVBoxLayout()
+        self.sc_copy_videos_layout.addLayout(self.sc_copy_videos_browse_layout)
+        self.sc_copy_videos_add = QPushButton('Add...', objectName='browse')
+        self.sc_copy_videos_remove = QPushButton('Remove', objectName='browse')
+        self.sc_copy_videos_clear = QPushButton('Clear', objectName='browse')
+        self.sc_copy_videos_browse_layout.addWidget(self.sc_copy_videos_add)
+        self.sc_copy_videos_browse_layout.addWidget(self.sc_copy_videos_remove)
+        self.sc_copy_videos_browse_layout.addWidget(self.sc_copy_videos_clear)
+        self.sc_copy_videos_browse_layout.addStretch()
         
         self.sc_copy_dir_label = QLabel('Scene Changes Directory', objectName='sub_title')
         self.sc_layout.addWidget(self.sc_copy_dir_label)
@@ -1226,9 +1237,9 @@ class Window(LayoutLineWidget):
         self.copy_sc_button = QPushButton('Run', objectName='run')
         self.sc_layout.addWidget(self.copy_sc_button, 0, QtCore.Qt.AlignRight)
 
-        self.sc_copy_messages = QPlainTextEdit()
-        self.sc_copy_messages.setReadOnly(True)
-        self.sc_layout.addWidget(self.sc_copy_messages)
+        # self.sc_copy_messages = QPlainTextEdit()
+        # self.sc_copy_messages.setReadOnly(True)
+        # self.sc_layout.addWidget(self.sc_copy_messages)
 
 
 
@@ -1241,10 +1252,21 @@ class Window(LayoutLineWidget):
         self.sc_gen_videos_layout = QHBoxLayout()
         self.sc_gen_layout.addLayout(self.sc_gen_videos_layout)
         # self.gen_sc_videos_list = QListWidget()
-        self.gen_sc_videos_list = DropList(['.mp4'])
+        self.gen_sc_videos_list = DropList(['.mp4', '.m4v', '.mpg',
+                                            '.avi', '.mov', '.wmv', '.mkv'])
+        self.gen_sc_videos_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         self.sc_gen_videos_layout.addWidget(self.gen_sc_videos_list)
-        self.sc_gen_videos_browse = QPushButton('Browse...', objectName='browse')
-        self.sc_gen_videos_layout.addWidget(self.sc_gen_videos_browse, 0, QtCore.Qt.AlignBottom)
+        self.sc_gen_videos_browse_layout = QVBoxLayout()
+        self.sc_gen_videos_layout.addLayout(self.sc_gen_videos_browse_layout)
+        self.sc_gen_videos_add = QPushButton('Add...', objectName='browse')
+        self.sc_gen_videos_remove = QPushButton('Remove', objectName='browse')
+        self.sc_gen_videos_clear = QPushButton('Clear', objectName='browse')
+        self.sc_gen_videos_browse_layout.addWidget(self.sc_gen_videos_add)
+        self.sc_gen_videos_browse_layout.addWidget(self.sc_gen_videos_remove)
+        self.sc_gen_videos_browse_layout.addWidget(self.sc_gen_videos_clear)
+        self.sc_gen_videos_browse_layout.addStretch()
         
         self.sc_gen_dir_label = QLabel('Save Scene Changes To', objectName='sub_title')
         self.sc_gen_layout.addWidget(self.sc_gen_dir_label)
@@ -1270,9 +1292,9 @@ class Window(LayoutLineWidget):
         self.gen_sc_button = QPushButton('Run', objectName='run')
         self.sc_gen_layout.addWidget(self.gen_sc_button, 0, QtCore.Qt.AlignRight)
 
-        self.sc_gen_messages = QPlainTextEdit()
-        self.sc_gen_messages.setReadOnly(True)
-        self.sc_gen_layout.addWidget(self.sc_gen_messages)
+        # self.sc_gen_messages = QPlainTextEdit()
+        # self.sc_gen_messages.setReadOnly(True)
+        # self.sc_gen_layout.addWidget(self.sc_gen_messages)
 
 
 
@@ -1285,10 +1307,21 @@ class Window(LayoutLineWidget):
         self.fr_gen_videos_layout = QHBoxLayout()
         self.fr_layout.addLayout(self.fr_gen_videos_layout)
         # self.gen_fr_videos_list = QListWidget()
-        self.gen_fr_videos_list = DropList(['.mp4'])
+        self.gen_fr_videos_list = DropList(['.mp4', '.m4v', '.mpg',
+                                            '.avi', '.mov', '.wmv', '.mkv'])
+        self.gen_fr_videos_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         self.fr_gen_videos_layout.addWidget(self.gen_fr_videos_list)
-        self.fr_gen_videos_browse = QPushButton('Browse...', objectName='browse')
-        self.fr_gen_videos_layout.addWidget(self.fr_gen_videos_browse, 0, QtCore.Qt.AlignBottom)
+        self.fr_gen_videos_browse_layout = QVBoxLayout()
+        self.fr_gen_videos_layout.addLayout(self.fr_gen_videos_browse_layout)
+        self.fr_gen_videos_add = QPushButton('Add...', objectName='browse')
+        self.fr_gen_videos_remove = QPushButton('Remove', objectName='browse')
+        self.fr_gen_videos_clear = QPushButton('Clear', objectName='browse')
+        self.fr_gen_videos_browse_layout.addWidget(self.fr_gen_videos_add)
+        self.fr_gen_videos_browse_layout.addWidget(self.fr_gen_videos_remove)
+        self.fr_gen_videos_browse_layout.addWidget(self.fr_gen_videos_clear)
+        self.fr_gen_videos_browse_layout.addStretch()
 
         self.run_fr_button = QPushButton('Run', objectName='run')
         self.run_fr_layout = QHBoxLayout()
@@ -1296,7 +1329,8 @@ class Window(LayoutLineWidget):
         self.fr_layout.addLayout(self.run_fr_layout)
         self.run_fr_layout.addWidget(self.run_fr_button, 0, QtCore.Qt.AlignRight)
     
-
+        self.fr_gen_results_label = QLabel('Results', objectName='sub_title')
+        self.fr_layout.addWidget(self.fr_gen_results_label)
         self.fr_gen_messages = QPlainTextEdit()
         self.fr_gen_messages.setReadOnly(True)
         self.fr_layout.addWidget(self.fr_gen_messages)
@@ -1313,9 +1347,19 @@ class Window(LayoutLineWidget):
         self.stats_layout.addLayout(self.stats_files_layout)
         # self.stats_files_list = QListWidget()
         self.stats_files_list = DropList(['.vtt', '.srt'])
+        self.stats_files_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         self.stats_files_layout.addWidget(self.stats_files_list)
-        self.stats_files_browse = QPushButton('Browse...', objectName='browse')
-        self.stats_files_layout.addWidget(self.stats_files_browse, 0, QtCore.Qt.AlignBottom)
+        self.stats_files_browse_layout = QVBoxLayout()
+        self.stats_files_layout.addLayout(self.stats_files_browse_layout)
+        self.stats_files_add = QPushButton('Add...', objectName='browse')
+        self.stats_files_remove = QPushButton('Remove', objectName='browse')
+        self.stats_files_clear = QPushButton('Clear', objectName='browse')
+        self.stats_files_browse_layout.addWidget(self.stats_files_add)
+        self.stats_files_browse_layout.addWidget(self.stats_files_remove)
+        self.stats_files_browse_layout.addWidget(self.stats_files_clear)
+        self.stats_files_browse_layout.addStretch()
 
         self.run_stats_button = QPushButton('Run', objectName='run')
         self.run_stats_layout = QHBoxLayout()
@@ -1323,6 +1367,8 @@ class Window(LayoutLineWidget):
         self.stats_layout.addLayout(self.run_stats_layout)
         self.run_stats_layout.addWidget(self.run_stats_button, 0, QtCore.Qt.AlignRight)
 
+        self.stats_results_label = QLabel('Results', objectName='sub_title')
+        self.stats_layout.addWidget(self.stats_results_label)
         self.stats_gen_messages = QPlainTextEdit()
         self.stats_gen_messages.setReadOnly(True)
         self.stats_layout.addWidget(self.stats_gen_messages)
@@ -1338,10 +1384,12 @@ class Window(LayoutLineWidget):
         self.conv_files_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
-        self.converters_layout.addWidget(self.conv_files_list)
+        self.conv_files_layout = QHBoxLayout()
+        self.converters_layout.addLayout(self.conv_files_layout)
+        self.conv_files_layout.addWidget(self.conv_files_list)
         
-        self.conv_files_buttons_layout = QHBoxLayout()
-        self.converters_layout.addLayout(self.conv_files_buttons_layout)
+        self.conv_files_buttons_layout = QVBoxLayout()
+        self.conv_files_layout.addLayout(self.conv_files_buttons_layout)
 
         self.add_conv_files_button = QPushButton('Add', objectName='browse1')
         self.remove_conv_files_button = QPushButton('Remove', objectName='browse1')
@@ -1508,24 +1556,34 @@ class Window(LayoutLineWidget):
 
 
 
-        self.sc_copy_videos_browse.clicked.connect(self.browse_video_list)
+        # self.sc_copy_videos_browse.clicked.connect(self.browse_video_list)
+        self.sc_copy_videos_add.clicked.connect(self.add_files)
+        self.sc_copy_videos_remove.clicked.connect(self.remove_files)
+        self.sc_copy_videos_clear.clicked.connect(self.clear_files)
         self.sc_copy_dir_browse.clicked.connect(self.browse_dir_1)
         self.sc_copy_to_browse.clicked.connect(self.browse_dir_2)
         self.copy_sc_button.clicked.connect(self.copy_scene_changes)
 
-        self.sc_gen_videos_browse.clicked.connect(self.browse_video_list)
+        # self.sc_gen_videos_browse.clicked.connect(self.browse_video_list)
+        self.sc_gen_videos_add.clicked.connect(self.add_files)
+        self.sc_gen_videos_remove.clicked.connect(self.remove_files)
+        self.sc_gen_videos_clear.clicked.connect(self.clear_files)
         self.sc_gen_dir_browse.clicked.connect(self.browse_save_dir)
         self.gen_sc_button.clicked.connect(self.generate_sc)
 
-        self.fr_gen_videos_browse.clicked.connect(self.browse_video_list)
+        self.fr_gen_videos_add.clicked.connect(self.add_files)
+        self.fr_gen_videos_remove.clicked.connect(self.remove_files)
+        self.fr_gen_videos_clear.clicked.connect(self.clear_files)
         self.run_fr_button.clicked.connect(self.run_fr)
 
-        self.stats_files_browse.clicked.connect(self.browse_list_1)
+        self.stats_files_add.clicked.connect(self.add_files)
+        self.stats_files_remove.clicked.connect(self.remove_files)
+        self.stats_files_clear.clicked.connect(self.clear_files)
         self.run_stats_button.clicked.connect(self.get_stats)
         
-        self.add_conv_files_button.clicked.connect(self.add_conv_files)
-        self.remove_conv_files_button.clicked.connect(self.remove_conv_files)
-        self.clear_conv_files_button.clicked.connect(self.clear_conv_files)
+        self.add_conv_files_button.clicked.connect(self.add_files)
+        self.remove_conv_files_button.clicked.connect(self.remove_files)
+        self.clear_conv_files_button.clicked.connect(self.clear_files)
         self.conv_browse_save_butt.clicked.connect(self.conv_browse_save)
         self.run_conv_button.clicked.connect(self.convert_run)
 
@@ -1610,6 +1668,23 @@ class Window(LayoutLineWidget):
             elif self.sender() == self.add_source_files:
                 drop_list = self.source_files_list
 
+        elif self.content.currentIndex() == 5:
+            if self.content.currentWidget().currentIndex() == 0:
+                supported_formats = 'Video Files (*.mp4 *.m4v *.mpg *.avi *.mov *.wmv *.mkv)'
+                drop_list = self.copy_sc_videos_list
+            elif self.content.currentWidget().currentIndex() == 1:
+                supported_formats = 'Video Files (*.mp4 *.m4v *.mpg *.avi *.mov *.wmv *.mkv)'
+                drop_list = self.gen_sc_videos_list
+            elif self.content.currentWidget().currentIndex() == 2:
+                supported_formats = 'Video Files (*.mp4 *.m4v *.mpg *.avi *.mov *.wmv *.mkv)'
+                drop_list = self.gen_fr_videos_list
+            elif self.content.currentWidget().currentIndex() == 3:
+                supported_formats = 'Subtitle Files (*.srt *.vtt)'
+                drop_list = self.stats_files_list
+            elif self.content.currentWidget().currentIndex() == 4:
+                supported_formats = 'Subtitle Files (*.srt *.vtt)'
+                drop_list = self.conv_files_list
+
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
             'Select Files...',
@@ -1673,6 +1748,18 @@ class Window(LayoutLineWidget):
             elif self.sender() == self.remove_source_files:
                 drop_list = self.source_files_list
 
+        elif self.content.currentIndex() == 5:
+            if self.content.currentWidget().currentIndex() == 0:
+                drop_list = self.copy_sc_videos_list
+            elif self.content.currentWidget().currentIndex() == 1:
+                drop_list = self.gen_sc_videos_list
+            elif self.content.currentWidget().currentIndex() == 2:
+                drop_list = self.gen_fr_videos_list
+            elif self.content.currentWidget().currentIndex() == 3:
+                drop_list = self.stats_files_list
+            elif self.content.currentWidget().currentIndex() == 4:
+                drop_list = self.conv_files_list
+
         selected_list = drop_list.selectedItems()
 
         for item in selected_list:
@@ -1697,6 +1784,17 @@ class Window(LayoutLineWidget):
             elif self.sender() == self.clear_source_files:
                 drop_list = self.source_files_list
 
+        elif self.content.currentIndex() == 5:
+            if self.content.currentWidget().currentIndex() == 0:
+                drop_list = self.copy_sc_videos_list
+            elif self.content.currentWidget().currentIndex() == 1:
+                drop_list = self.gen_sc_videos_list
+            elif self.content.currentWidget().currentIndex() == 2:
+                drop_list = self.gen_fr_videos_list
+            elif self.content.currentWidget().currentIndex() == 3:
+                drop_list = self.stats_files_list
+            elif self.content.currentWidget().currentIndex() == 4:
+                drop_list = self.conv_files_list
 
         drop_list.clear()
 
@@ -2851,14 +2949,12 @@ class Window(LayoutLineWidget):
         #     self.fixes_errors += 'ERROR: Cannot run fixes. The number of videos is not the same as the number of subtitle files.\n'
 
         if not self.fixes_errors:
-            text = 'Running fixes for files in directory...\n'
-            text += self.fixes_files_dir
-            text += '\n\nWith the videos in...\n'
-            text += self.fixes_videos_dir
-            text += '\n\nAnd shot changes in...\n'
-            text += self.fixes_sc_dir
-            self.fixes_messages.setPlainText(text)
-            
+            # text = 'Running fixes for files in directory...\n'
+            # text += self.fixes_files_dir
+            # text += '\n\nWith the videos in...\n'
+            # text += self.fixes_videos_dir
+            # text += '\n\nAnd shot changes in...\n'
+            # text += self.fixes_sc_dir
             
             TCFOL = self.fix_TCFOL_checkbox.isChecked()
             snap_to_frames = self.snap_to_frames_checkbox.isChecked()
@@ -2868,13 +2964,19 @@ class Window(LayoutLineWidget):
             batch_fixes(
                 self.fixes_files_dir,
                 self.fixes_videos_dir,
-                42,
+                self.unbreak_limit_spin.value(),
                 TCFOL=TCFOL,
                 snap_frames=snap_to_frames,
                 apply_min_gaps=fix_min_gaps,
                 min_gap=min_gap,
                 apply_sort=True
             )
+
+            text = 'Fixes applied successfully.'
+
+            self.fixes_messages.setPlainText(text)
+            self.opt_4_page_cont.setCurrentIndex(1)
+
         else:
             self.fixes_messages.setPlainText(self.fixes_errors)
             self.fixes_errors = ''

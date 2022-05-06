@@ -2,6 +2,7 @@
 /build
 /dist
 /exes
+/videos
 *.7z
 *.srt
 *.vtt

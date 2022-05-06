@@ -38,10 +38,17 @@ def fps_check(file_name):
 def video_duration(video):
 
     probe = ffmpeg.probe(video)
-    if probe['streams'][0]['duration'] != probe['streams'][1]['duration']:
-        print(f'Warning: {video} has a mismatch between the streams')
 
-    duration = Timecode(float(probe['streams'][0]['duration']))
+    name, ext = os.path.splitext(video)
+    
+    if ext == '.mkv':
+        duration = Timecode(float(probe['format']['duration']))
+    else:
+
+    # if probe['streams'][0]['duration'] != probe['streams'][1]['duration']:
+    #     print(f'Warning: {video} has a mismatch between the streams')
+
+        duration = Timecode(float(probe['streams'][0]['duration']))
 
     return duration.total_seconds, duration.__str__()[:8]
 
@@ -365,3 +372,13 @@ def get_stats(file_name):
     print('\n\n')
 
     return (total_words, total_CPS, total_CPS_ns)
+
+
+def count_words(string):
+    rep_string = re.sub('[+-]?[0-9]+([., -]?[0-9]+)*', 'a', string)
+    rep_string = re.sub('\s+', rep_string, ' ')
+    rep_string = rep_string.strip()
+    matches = re.findall('[^\s]+', rep_string)
+    count = len(matches)
+
+    return count
