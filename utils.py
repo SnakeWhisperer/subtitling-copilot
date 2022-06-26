@@ -91,6 +91,28 @@ def get_ffmpeg_probe(video):
 
     return probe
 
+def get_video_data(video, requested_data):
+    probe = get_ffmpeg_probe(video)
+    name, ext = os.path.splitext(video)
+
+    requested_data_val = None
+
+    for key in probe.keys():
+        if key == 'streams':
+            for stream in probe[key]:
+                if stream.get('codec_type', None) is not None and stream['codec_type'] == 'video':
+                    requested_data_val = stream.get(requested_data, None)
+        if key == 'format' and (requested_data_val is None or requested_data == 'bit_rate'):
+            if requested_data == 'bit_rate':
+                if (requested_data_val is None
+                    or (requested_data_val is not None
+                        and requested_data_val < probe[key].get(requested_data, None))):
+                    requested_data_val = probe[key].get(requested_data, None)
+            else:
+                requested_data_val = probe[key].get(requested_data, None)
+
+    return requested_data_val
+
 
 def video_duration(video):
 
@@ -120,7 +142,8 @@ def video_duration(video):
 def get_frame_rate(video):
     probe = get_ffmpeg_probe(video)
     video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
-    fps = eval(video_info['r_frame_rate'])
+    # fps = eval(video_info['r_frame_rate'])
+    fps = eval(video_info['avg_frame_rate'])
 
     return fps
 

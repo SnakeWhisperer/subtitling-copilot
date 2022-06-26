@@ -84,11 +84,14 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
         for video in all_videos:
             video_ext = os.path.splitext(video)[-1]
 
-            if video_ext != '.mp4':
-                print('Currently can only work with .mp4 files.')
-                return
-            else:
+            if video_ext in ['.mp4', '.m4v', '.mpg', '.avi', '.mov', '.wmv', '.mkv']:
                 video_files.append(video)
+
+            # if video_ext != '.mp4':
+            #     print('Currently can only work with .mp4 files.')
+            #     return
+            # else:
+            #     video_files.append(video)
 
     # video_files = sorted(video_files)
     os.chdir(files_dir)
