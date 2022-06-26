@@ -230,7 +230,7 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
 def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
                   CPS=True, CPS_limit=25, CPS_spaces=False, CPL=True,
                   CPL_limit=42, frame_rate=24, max_lines=2, min_duration=0.833,
-                  max_duration=7, ellipses=True, gaps=True, batch=False,
+                  max_duration=7, ellipses=True, gaps=True, min_gap=2, batch=False,
                   report=False, report_name='', old=True,
                   glyphs=False, glyph_list=[], check_TCFOL=True, check_OST=True,
                   GUI=True):
@@ -375,7 +375,15 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
             # Only for debugging purposes
             # if i == 73:
             #     hello = 2
-            gap_errors = check_gaps_one(i, subs, error_counter=error_counter)
+
+            invalid_gap_range_min = min_gap + 1
+            invalid_gap_range_max = round(round(frame_rate)/2)-1
+            invalid_gap_range = (invalid_gap_range_min, invalid_gap_range_max)
+
+            gap_errors = check_gaps_one(i, subs,
+                                        invalid_range=invalid_gap_range,
+                                        error_counter=error_counter,
+                                        frame_rate=frame_rate, SE_gaps=True)
 
             if gap_errors:
                 general = {**general, **gap_errors}
@@ -512,8 +520,9 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
 
 
 def check_gaps_one(index, subtitles, invalid_range=(3,11), error_counter=1,
-                   frame_rate=24, sorted=False, snapped=False,
-                   fix=False, ext_q=False, off_forward=False):
+                   frame_rate=24, sorted=False, snapped=False, SE_gaps=False,
+                   exact_SE_gaps=True, fix=False, ext_q=False,
+                   off_forward=False):
     """[summary]
 
     NOTE: Make sure to review the calls to this function
@@ -550,7 +559,16 @@ def check_gaps_one(index, subtitles, invalid_range=(3,11), error_counter=1,
     for j in range(len(subtitles)):
 
         if j != index:
-            if snapped:
+            if SE_gaps:
+                if exact_SE_gaps:
+                    pass
+                gap = (subtitles[j].start_time.total_seconds
+                       - subtitles[index].end_time.total_seconds)
+                gap = round(round(gap, 3) * frame_rate)
+
+                # min_gap_seconds = 2 / frame_rate
+                # invalid_range_seconds = (invalid_range[0]/frame_rate, invalid_range[1]/frame_rate)
+            elif snapped:
                 gap = (
                     subtitles[j].start_time.total_rendered_frames_s
                     - subtitles[index].end_time.total_rendered_frames_s)
