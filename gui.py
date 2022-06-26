@@ -1820,36 +1820,68 @@ class Window(LayoutLineWidget):
             drop_list.takeItem(current_row)
 
     def clear_files(self, event):
+        clear_files_1 = False
+        clear_files_2 = False
+
+        # OST Option
         if self.content.currentIndex() == 1:
+            # Extract
             if self.content.currentWidget().currentIndex() == 0:
                 drop_list = self.file_list_1
+                clear_files_1 = True
+
+            # Merge
             elif self.content.currentWidget().currentIndex() == 1:
                 if self.sender() == self.opt_1_tab_2_clear_1:
                     drop_list = self.file_list_2
+                    clear_files_1 = True
                 elif self.sender() == self.opt_1_tab_2_clear_2:
                     drop_list = self.file_list_3
+                    clear_files_2 = True
+
+            # Generate
             elif self.content.currentWidget().currentIndex() == 2:
                 drop_list = self.file_list_4
+                clear_files_1 = True
 
+        # Issues Option
         elif self.content.currentIndex() == 3:
             if self.sender() == self.clear_target_files:
                 drop_list = self.target_files_list
+                clear_files_1 = True
             elif self.sender() == self.clear_source_files:
                 drop_list = self.source_files_list
+                clear_files_1 = True
 
+        # Utilities Option
         elif self.content.currentIndex() == 5:
+            # Copy shot changes
             if self.content.currentWidget().currentIndex() == 0:
                 drop_list = self.copy_sc_videos_list
+
+            # Generate shot changes
             elif self.content.currentWidget().currentIndex() == 1:
                 drop_list = self.gen_sc_videos_list
+
+            # Get frame rates
             elif self.content.currentWidget().currentIndex() == 2:
                 drop_list = self.gen_fr_videos_list
+
+            # Get stats
             elif self.content.currentWidget().currentIndex() == 3:
                 drop_list = self.stats_files_list
+
+            # Converters
             elif self.content.currentWidget().currentIndex() == 4:
                 drop_list = self.conv_files_list
 
+            clear_files_1 = True
+
         drop_list.clear()
+        if clear_files_1:
+            self.files_1 = []
+        elif clear_files_2:
+            self.files_2 = []
 
 
     def option_1_clicked(self, event):
