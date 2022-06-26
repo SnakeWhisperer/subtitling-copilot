@@ -1227,6 +1227,8 @@ class Window(LayoutLineWidget):
         self.sc_copy_dir_layout = QHBoxLayout()
         self.sc_layout.addLayout(self.sc_copy_dir_layout)
         self.sc_dir_entry = QLineEdit()
+        if self.settings.value('last_copy_sc_source_dir'):
+            self.sc_dir_entry.insert(self.settings.value('last_copy_sc_source_dir'))
         self.sc_copy_dir_layout.addWidget(self.sc_dir_entry)
         self.sc_copy_dir_browse = QPushButton('Browse...', objectName='browse')
         self.sc_copy_dir_layout.addWidget(self.sc_copy_dir_browse, 0, QtCore.Qt.AlignBottom)
@@ -2159,6 +2161,23 @@ class Window(LayoutLineWidget):
 
 
     def browse_dir_1(self, event):
+        # Fixes Option
+        if self.content.currentIndex() == 4:
+            if self.settings.value('last_fixes_files_dir'):
+                start_dir = self.settings.value('last_fixes_files_dir')
+            else:
+                start_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+
+        # Utilities Option
+        elif self.content.currentIndex() == 5:
+            # Copy shot changes
+            if self.content.currentWidget().currentIndex == 0:
+                if self.settings.value('last_copy_sc_source_dir'):
+                    start_dir = self.settings.value('last_copy_sc_source_dir')
+                else:
+                    start_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+
+
 
         print(self.content.currentIndex())
         # print(self.content.currentWidget().currentIndex())
@@ -2170,16 +2189,18 @@ class Window(LayoutLineWidget):
             QFileDialog.ShowDirsOnly
         )
 
-        if self.content.currentIndex() == 4:
+        if self.content.currentIndex() == 4 and directory:
             self.fixes_files_dir = directory
             self.fixes_files_list.clear()
             self.fixes_files_list.insert(self.fixes_files_dir)
+            self.settings.setValue('last_fixes_files_dir', directory)
 
-        if self.content.currentIndex() == 5:
+        if self.content.currentIndex() == 5 and directory:
             if self.content.currentWidget().currentIndex() == 0:
                 self.copy_sc_source_dir = directory
                 self.sc_dir_entry.clear()
                 self.sc_dir_entry.insert(self.copy_sc_source_dir)
+                self.settings.setValue('last_copy_sc_source_dir', directory)
 
 
     def browse_dir_2(self, event):
