@@ -390,6 +390,9 @@ class Window(LayoutLineWidget):
         self.header_label.setMinimumHeight(90)
         main_layout.addWidget(self.header_label, 0, 0, 1, 2)
 
+        self.files_1 = []
+        self.files_2 = []
+
 
         # MENU
         self.menu_container = QWidget(objectName='menu')
@@ -1663,44 +1666,72 @@ class Window(LayoutLineWidget):
 
 
     def add_files(self, event):
+        add_to_files_1 = False
+        add_to_files_2 = False
         print(self.content.currentIndex())
+
+        # OST Option
         if self.content.currentIndex() == 1:
+            # Extract
             if self.content.currentWidget().currentIndex() == 0:
                 supported_formats = '*.vtt'
                 drop_list = self.file_list_1
+                add_to_files_1 = True
+
+            # Merge
             elif self.content.currentWidget().currentIndex() == 1:
                 supported_formats = '*.vtt'
                 if self.sender() == self.opt_1_tab_2_add_1:
                     drop_list = self.file_list_2
+                    add_to_files_1 = True
                 elif self.sender() == self.opt_1_tab_2_add_2:
                     drop_list = self.file_list_3
+                    add_to_files_2 = True
+
+            # Generate
             elif self.content.currentWidget().currentIndex() == 2:
                 supported_formats = '*.docx'
                 drop_list = self.file_list_4
+                add_to_files_1 = True
 
+        # Issues Option
         elif self.content.currentIndex() == 3:
             supported_formats = '*.vtt'
             if self.sender() == self.add_target_files:
                 drop_list = self.target_files_list
+                add_to_files_1 = True
             elif self.sender() == self.add_source_files:
                 drop_list = self.source_files_list
+                add_to_files_2 = True
 
+        # Utilities Option
         elif self.content.currentIndex() == 5:
+            # Copy shot changes
             if self.content.currentWidget().currentIndex() == 0:
                 supported_formats = 'Video Files (*.mp4 *.m4v *.mpg *.avi *.mov *.wmv *.mkv)'
                 drop_list = self.copy_sc_videos_list
+
+            # Generate shot changes
             elif self.content.currentWidget().currentIndex() == 1:
                 supported_formats = 'Video Files (*.mp4 *.m4v *.mpg *.avi *.mov *.wmv *.mkv)'
                 drop_list = self.gen_sc_videos_list
+
+            # Get frame rates
             elif self.content.currentWidget().currentIndex() == 2:
                 supported_formats = 'Video Files (*.mp4 *.m4v *.mpg *.avi *.mov *.wmv *.mkv)'
                 drop_list = self.gen_fr_videos_list
+
+            # Get stats
             elif self.content.currentWidget().currentIndex() == 3:
                 supported_formats = 'Subtitle Files (*.srt *.vtt)'
                 drop_list = self.stats_files_list
+
+            # Converters
             elif self.content.currentWidget().currentIndex() == 4:
                 supported_formats = 'Subtitle Files (*.srt *.vtt)'
                 drop_list = self.conv_files_list
+
+            add_to_files_1 = True
 
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
@@ -1745,6 +1776,11 @@ class Window(LayoutLineWidget):
                 title,
                 message
             )
+
+        if add_to_files_1:
+            self.files_1 = file_names
+        elif add_to_files_2:
+            self.files_2 = file_names
 
 
     def remove_files(self, event):
@@ -2940,7 +2976,9 @@ class Window(LayoutLineWidget):
 
 
     def run_fr(self, event):
-        if not self.gen_fr_videos_list_send:
+        # if not self.gen_fr_videos_list_send:
+        #     self.gen_fr_errors += 'ERROR: Cannot get frame rates. Please select at least one video file.\n'
+        if not self.files_1:
             self.gen_fr_errors += 'ERROR: Cannot get frame rates. Please select at least one video file.\n'
 
 
@@ -2952,26 +2990,32 @@ class Window(LayoutLineWidget):
 
             longest_name = 0
 
-            for m in range(1, len(self.gen_fr_videos_list_send)):
-                print(self.gen_fr_videos_list_send[m])
-                print(len(self.gen_fr_videos_list_send[m]))
-                print('\n\n')
-                if (len(self.gen_fr_videos_list_send[m]) > longest_name):
+            # for m in range(1, len(self.gen_fr_videos_list_send)):
+            for m in range(1, len(self.files_1)):
+                # print(self.gen_fr_videos_list_send[m])
+                # print(len(self.gen_fr_videos_list_send[m]))
+                # print('\n\n')
+                # if (len(self.gen_fr_videos_list_send[m]) > longest_name):
+                if (len(self.files_1[m]) > longest_name):
                     #
-                    longest_name = len(self.gen_fr_videos_list_send[m])
+                    # longest_name = len(self.gen_fr_videos_list_send[m])
+                    longest_name = len(self.files_1[m])
 
             print(longest_name)
 
-            distance = longest_name + 17
+            distance = longest_name + 5
 
 
             frame_rates = batch_get_frame_rates_gui(
-                self.gen_fr_videos_list_send
+                # self.gen_fr_videos_list_send
+                self.files_1
             )
+            print(frame_rates)
 
             text = ''
 
-            for i, j in zip(self.gen_fr_videos_list_send, frame_rates):
+            # for i, j in zip(self.gen_fr_videos_list_send, frame_rates):
+            for i, j in zip(self.files_1, frame_rates):
                 hyphens = '-' * (distance - len(i) - 2)
 
                 text += f'{i} {hyphens} {format(j, ".3f")} fps\n\n'
