@@ -2171,21 +2171,17 @@ class Window(LayoutLineWidget):
         # Utilities Option
         elif self.content.currentIndex() == 5:
             # Copy shot changes
-            if self.content.currentWidget().currentIndex == 0:
+            if self.content.currentWidget().currentIndex() == 0:
                 if self.settings.value('last_copy_sc_source_dir'):
                     start_dir = self.settings.value('last_copy_sc_source_dir')
                 else:
                     start_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 
-
-
-        print(self.content.currentIndex())
-        # print(self.content.currentWidget().currentIndex())
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
             # QtCore.QDir.rootPath(),
-            r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            start_dir,
             QFileDialog.ShowDirsOnly
         )
 
