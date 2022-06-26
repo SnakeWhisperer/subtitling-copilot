@@ -1,4 +1,4 @@
-import re, os, xlsxwriter, srt_handler, copy, docx, ffmpeg
+import re, os, xlsxwriter, srt_handler, copy, docx, ffmpeg, shutil
 
 from typing import Union
 
@@ -13,6 +13,9 @@ from utils import video_duration
 from difflib import SequenceMatcher
 
 from natsort import os_sorted
+from openpyxl import load_workbook
+
+import spacy, textacy
 
 
 def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
@@ -52,7 +55,7 @@ def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
         Used when 'seg' is True to detect the offending subtitles,
         by default 25
     """
-    
+
 
     # Decode both the target language file and the source file.
     if old:
@@ -145,7 +148,7 @@ def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
 
         # Collect the target text according to the flag
         # that was set above, and if the subtitle is not an OST,
-        # depending on the OST argument.      
+        # depending on the OST argument.
         if collect_tar:
             if (not OST and tar_subs[i].line == 'auto') or OST:
 
@@ -153,7 +156,7 @@ def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
                 # offending subtitles ('seg' argument),
                 # see if the subtitle exceeds the reading speed limit.
                 if seg and tar_subs[i].CPS_ns > CPS_limit:
-                    
+
                     # If the previous subtitle exceeds
                     # the reading speed limit, start
                     # with an empty string.  This is because
@@ -170,7 +173,7 @@ def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
                     else:
                         off_text = nl*2
                         offending = True
-                    
+
                     # Get the offending text segmented.
                     # Note the two linebreaks at the end.
                     off_text = (
@@ -189,7 +192,7 @@ def get_fast_texts(en_file_name='', tar_file_name='', class_path='',
                 # as it is in the time span.
                 # NOTE: Maybe convert tar_text to a list to avoid
                 #       having that trailing space automatically.
-                else:                    
+                else:
                     tar_text += ' '.join(tar_subs[i].untagged_text) + ' '
                     offending = False
 
@@ -221,7 +224,7 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
         The reading speed limit, by default 25
     """
 
-    
+
     # It's necessary to store the original directory
     # so that the function can go back to it before returning.
     original_dir = os.getcwd()
@@ -247,7 +250,7 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
 
     if not GUI:
         os.chdir(tar_path)
-        
+
         # All files including everything that's not a subtitle file.
         all_tar_files = os.listdir()
         tar_sub_files = []
@@ -258,7 +261,7 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
         en_sub_files = []
 
         os.chdir(original_dir)
-    
+
     else:
         all_tar_files = tar_path
         tar_sub_files = []
@@ -274,13 +277,13 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
     # This is to ensure no mismatch arises when going
     # from target langauge file to source language file.
     for i in range(num_files):
-        
+
         if i < len(all_tar_files):
             tar_ext = os.path.splitext(all_tar_files[i])[-1]
 
             if tar_ext == '.vtt':
                 tar_sub_files.append(all_tar_files[i])
-        
+
         if i < len(all_en_files):
             en_ext = os.path.splitext(all_en_files[i])[-1]
 
@@ -292,7 +295,7 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
             return 'Cannot generate issue spreadsheet. Received more target VTT files than source VTT files.'
         elif len(en_sub_files) > len(tar_sub_files):
             return 'Cannot generate issue spreadsheet. Received more source VTT files than target VTT files.'
-    
+
     # NOTE: This loop assumes a complete and absolute match
     #       between all the files in the source language list
     #       and the target language list.
@@ -332,7 +335,7 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
     workbook.close()
 
     return
-        
+
 
 def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
                   OST=False, seg=False, CPS=True, CPS_limit=25, CPL=True,
@@ -388,7 +391,8 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
         name_short = re.search('[^_]+_[^_]+', video_name).group()
     else:
         video_name = en_file_name.split('/')[-1]
-        name_short = re.search('[^_]+_[^_]+', video_name).group()
+        # name_short = re.search('[^_]+_[^_]+', video_name).group()
+        name_short = re.search('^\d+', video_name).group()
 
     print(name_short)
     # Only for debugging purposes
@@ -489,13 +493,13 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
 
             if CPS and (tar_subs[i].CPS_ns > CPS_limit):
                 severity_list.append(str(tar_subs[i].CPS_ns) + ' CPS')
-            
+
             # If the current subtitle has not been already registered
             # in a cell with another one, go ahead with the processing.
             if i not in offending_list:
                 # Register the current subtitle in the tracking list.
                 offending_list.append(i)
-                
+
                 # NOTE: Apparently not used anywhere.
                 #       Delete if this is the case.
                 mid_time = (
@@ -600,7 +604,7 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
                 )
 
                 """
-                
+
                 # if i == 191:
                 #     hello = 2
 
@@ -623,7 +627,7 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
 
                 # These commented lines were a test to add bold
                 # to the offending text.
-                
+
                 worksheet.write_rich_string(
                     row_count,
                     4,
@@ -645,7 +649,7 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
                 row_count += 1
 
             else:
-                continue 
+                continue
 
     # If the function wasn't called for batch work,
     # the workbook needs to be closed here.
@@ -653,7 +657,7 @@ def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
     if not batch:
         workbook.close()
         return
-    
+
     # For batch work, the row count needs to be returned,
     # so that the calling function knows where to continue.
     else:
@@ -689,10 +693,10 @@ def get_en_context(en_subs, span_start, span_end, OST=False):
 
         # if j == 247:
         #     hello = 23
-        
+
         if (en_subs[j].start_time.total_seconds > span_start
             and en_subs[j].end_time.total_seconds < span_end):
-            # Always get the index of the first subtitle in the span.            
+            # Always get the index of the first subtitle in the span.
             if first:
                 first_ind = j
                 first = False
@@ -736,7 +740,7 @@ def get_en_context(en_subs, span_start, span_end, OST=False):
     #         '"?[.!?]"?\s*$',
     #         en_subs[first_ind-1].untagged_text[-1]
     #     )
-        
+
     # else:
     #     ending = True
 
@@ -761,7 +765,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                     CPL=True, CPL_limit=42, lines=True, max_lines=2,
                     offending_list=[], severity_list=[], OST=False):
     """Gets some text before and after a subtitle
-    in the target file language, most of the time whole sentences. 
+    in the target file language, most of the time whole sentences.
 
     Parameters
     ----------
@@ -819,7 +823,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
         # Don't look for context in subtitles before.
         forward = True
         span_start = 0.0
-    
+
     elif offending_sub > 0 and offending_sub < len(subs):
         # Look for context in subtitles before or after.
         forward = True
@@ -842,7 +846,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
     while backward and i >= 0 and (sents_bkw < 2 or chars_bkw < 130):
         # The text of the current subtitle being processed for context.
         sub_bkw_text = ''
-        
+
         # See if the subtitle is not an OST and collect its text,
         # or if the OST argument has been passed as True.
         if (not OST and subs[i].line == 'auto') or OST:
@@ -860,9 +864,9 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
             or re.search('[.?!]\s*[»"]*\s*$', sub_bkw_text)):
             # if '.' in sub_bkw_text or '?' in sub_bkw_text or '!' in sub_bkw_text:
             sents_bkw += 1
-        
+
         i -= 1
-    
+
     print(offending_sub)
     print(' '.join(cont_bkw))
     print(subs[i])
@@ -902,8 +906,8 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                     "»*\s*[.?!]\s*[»']*\s*",
                     cont_bkw
                 )
-                
-                
+
+
                 # first_sent_ind = re.search(
                 #     '»*\s*[.?!][\s*»*"*]+\s*',
                 #     cont_bkw
@@ -913,7 +917,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                 #     "»*\s*[.?!][\s*»*'*]+\s*"",
                 #     cont_bkw
                 # ).end()
-                
+
                 if first_sent_ind_match:
                     first_sent_ind = first_sent_ind_match.end()
                     cont_bkw = cont_bkw[first_sent_ind:]
@@ -975,7 +979,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                 sub_fwd_text += (nl*2) + nl.join(subs[j].untagged_text)
                 sub_fwd_text_list = [nl*2]
                 for n in range(len(subs[j].untagged_text)):
-                    if n + 1 in CPL_offending_lines:        
+                    if n + 1 in CPL_offending_lines:
                         sub_fwd_text_list.extend([
                             2,
                             subs[j].untagged_text[n],
@@ -1004,9 +1008,9 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                             1,
                             subs[j].untagged_text[o]
                         ])
-                    
+
                     if o < len(subs[j].untagged_text) - 1:
-                        sub_fwd_text_list.append(nl)                    
+                        sub_fwd_text_list.append(nl)
 
         elif not OST and subs[j].line == 'auto':
             # Use two linebreaks if the text comes
@@ -1016,7 +1020,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
                 sub_fwd_text = ''
                 sub_fwd_text_list = [nl*2]
                 append_nl = False
-                
+
             else:
                 sub_fwd_text = ' '
             sub_fwd_text += ' '.join(subs[j].untagged_text)
@@ -1024,7 +1028,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
 
         # if CPS_offending or CPL_offending:
         #     cont_fwd.append(None)
-        
+
         if sub_fwd_text:
             cont_fwd.extend(sub_fwd_text_list)
 
@@ -1039,7 +1043,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
 
         CPS_offending = False
         CPL_offending = False
-        
+
         j += 1
 
     # cont_fwd = ' '.join(cont_fwd)
@@ -1054,7 +1058,7 @@ def get_CPS_context(offending_sub, subs, target, CPS=True, CPS_limit=25,
             cont_fwd
         )
 
-        
+
         if not fwd_end_match:
             last_sent_ind = re.search(
                 # NOTE: See
@@ -1133,7 +1137,7 @@ def extract_subs(file_name: str, span_start: Union[str, int],
             in_subs = parse_VTT(file_name)['cues']
         in_vtt = True
         in_srt = False
-    
+
     elif in_ext == '.srt':
         in_subs = parse_SRT(file_name)
         in_vtt = False
@@ -1153,7 +1157,7 @@ def extract_subs(file_name: str, span_start: Union[str, int],
     elif out_ext == '.srt':
         out_vtt = False
         out_srt = True
-    
+
     elif out_name:
         raise FormatError('Output file extension can only be .vtt or .srt')
 
@@ -1209,7 +1213,7 @@ def extract_subs(file_name: str, span_start: Union[str, int],
 
     if not out_subs:
         print('No subtitles found in the specified range.')
-    
+
     elif not out_name:
         for out_sub in out_subs:
             print(out_sub)
@@ -1330,7 +1334,7 @@ def check_OSTs(directory: str, old:bool = True):
         True to use the old VTT parser
         or False to use the best, most recent one, by default True:bool
     """
-    
+
     original_dir = os.getcwd()
     os.chdir(directory)
 
@@ -1352,7 +1356,7 @@ def check_OSTs(directory: str, old:bool = True):
 
                 if sub.line == 20 and not tag_match:
                     OST_errors.append(i)
-                
+
                 elif sub.line == 'auto' and tag_match:
                     OST_errors.append(i)
 
@@ -1426,7 +1430,7 @@ def NAS_consist(directory:str, old:bool = True):
                 vtt_subs = decode_VTT(read_text_file(sub_file))['subtitles']
             else:
                 vtt_subs = parse_VTT(sub_file)['cues']
-            
+
             for i, sub in enumerate(vtt_subs):
                 if ('<i>' in ' '.join(sub.text) or '"' in ' '.join(sub.text)
                     or '“' in ' '.join(sub.text) or '”' in ' '.join(sub.text)
@@ -1462,7 +1466,7 @@ def NAS_consist_batch(file_name:str, directories:list, look_up:list = []):
         List of strings to look in the files,
         usually '<i>' and quotation marks, by default []
     """
-    
+
     with open(file_name, 'w', encoding='utf-8-sig') as const_file:
         for directory in directories:
             # contents = NAS_consist(directory)
@@ -1490,7 +1494,7 @@ def italics_consist(directory, look_up, old=True):
                 vtt_subs = decode_VTT(read_text_file(sub_file))['subtitles']
             else:
                 vtt_subs = parse_VTT(sub_file)['cues']
-            
+
             open_tag = False
             time_span = ''
             for i, sub in enumerate(vtt_subs):
@@ -1567,7 +1571,7 @@ def extract_OSTs(file_name, save_OST_dir, batch=False, delete_OSTs=False,
                 or re.search('.+\]$', check_text)):
                 # Considered actual OST
                 OSTs.append(copy.deepcopy(sub))
-                OST_indexes.append(i)                
+                OST_indexes.append(i)
 
     if delete_OSTs:
         for j in reversed(OST_indexes):
@@ -1617,7 +1621,7 @@ def batch_extract_OSTs(lang_path, save_OST_dir,
 
     # parent_dir = r'\\'.join(lang_path.split('\\')[:-1])
     # lang = lang_path.split('\\')[-1]
-    # new_dir = parent_dir + r'\\' + lang+'__Auto_OSTs' 
+    # new_dir = parent_dir + r'\\' + lang+'__Auto_OSTs'
     # os.mkdir(new_dir)
 
     os.chdir(lang_path)
@@ -1645,7 +1649,7 @@ def batch_extract_OSTs(lang_path, save_OST_dir,
                 global_errors[full_file_name] = errors
 
     os.chdir(original_dir)
-    
+
     if global_errors or global_warnings:
         return (global_warnings, global_errors)
 
@@ -1653,7 +1657,7 @@ def batch_extract_OSTs(lang_path, save_OST_dir,
         return False
 
 
-    
+
 
 def TM_fixes(directory, lookup):
 
@@ -1706,11 +1710,11 @@ def check_OST_audit(file_name):
 
     paragraph_counter = 1
     single_file = True
-     
+
     while paragraph_counter <= 2:
         if re.search('\s*\d+:\d*\s*$', doc.paragraphs[paragraph_counter-1].text):
             single_file = False
-        
+
         paragraph_counter += 1
 
     return single_file
@@ -1752,9 +1756,9 @@ def get_OSTs(directory, save_OSTs_dir, files=True):
                     start_seconds = values[0] * 60 + values[1]
                     start_time = Timecode(start_seconds)
                     end_time = Timecode(start_seconds + 4)
-                    
+
                     va = 2
-                
+
                 elif seen_time:
                     if para.text:
                         if not cue_text:
@@ -1778,7 +1782,7 @@ def get_OSTs(directory, save_OSTs_dir, files=True):
                     raw_text = '[' + raw_text
                 if not re.search('\]\s*$', raw_text):
                     raw_text = raw_text + ']'
-                
+
                 raw_text = raw_text.upper()
                 text = VTT_text_parser(raw_text)
 
@@ -1798,7 +1802,7 @@ def get_OSTs(directory, save_OSTs_dir, files=True):
                 counter += 1
 
                 va = 2
-            
+
             OST_name = name.split('/')[-1]
             OST_file_name = save_OSTs_dir + '\\' + OST_name + '.vtt'
             save_VTT_subs(OST_file_name, {'regions': [], 'styles': [], 'cues': OSTs})
@@ -1833,7 +1837,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
         if ((re.search('^\s*\d+\.', para.text) or re.search('^[^\d]+\d+$', para.text)) and not seen_time):
         # if re.search('^\s*\d+\.', para.text):
             print(para.text)
-            
+
             if OSTs_raw:
                 OSTs = []
                 counter = 1
@@ -1844,7 +1848,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
                         raw_text = '[' + raw_text
                     if not re.search('\]\s*$', raw_text):
                         raw_text = raw_text + ']'
-                    
+
                     raw_text = raw_text.upper()
 
                     text = VTT_text_parser(raw_text)
@@ -1865,7 +1869,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
                     counter += 1
 
                     va = 2
-                
+
                 save_VTT_subs(OST_name, {'regions': [], 'styles': [], 'cues': OSTs})
 
 
@@ -1905,7 +1909,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
             start_seconds = values[0] * 60 + values[1]
             start_time = Timecode(start_seconds)
             end_time = Timecode(start_seconds + 4)
-            
+
             va = 2
 
         elif seen_time:
@@ -1937,7 +1941,7 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
                 raw_text = '[' + raw_text
             if not re.search('\]\s*$', raw_text):
                 raw_text = raw_text + ']'
-            
+
             raw_text = raw_text.upper()
 
             text = VTT_text_parser(raw_text)
@@ -1958,12 +1962,12 @@ def get_OSTs_single(file_name, save_OST_dir, GUI=True):
             counter += 1
 
             va = 2
-        
+
         save_VTT_subs(OST_name, {'regions': [], 'styles': [], 'cues': OSTs})
 
 
 def check_CPS(directory):
-    
+
     original_dir = os.getcwd()
 
     os.chdir(directory)
@@ -2124,7 +2128,7 @@ def find_similarity(video_dir, file_dir):
         if ext == '.vtt':
             sub_list.append(name)
 
-    
+
     workbook = xlsxwriter.Workbook('Similarities.xlsx')
     worksheet = workbook.add_worksheet()
     bold_format = workbook.add_format({'bold': 1})
@@ -2142,5 +2146,158 @@ def find_similarity(video_dir, file_dir):
 
 
     os.chdir(original_dir)
-    
+
     workbook.close()
+
+
+def segment_times(filename):
+    subs = parse_VTT(filename)['cues']
+
+    all_info = []
+
+    for i, sub in enumerate(subs):
+        clean_text = re.sub('[^A-Za-z\s]', '', sub.text)
+        clean_text = re.sub(r'\n', ' ', clean_text)
+        clean_text_2 = re.sub(r'\n', ' ', sub.text)
+        start = sub.start_time.total_seconds
+        duration = sub.get_duration()
+        sec_rate = duration/len(clean_text)
+
+        segmented_text = clean_text.split(' ')
+        segmented_text_2 = clean_text_2.split(' ')
+
+        single_times = []
+        cumulative_length = 0
+
+        # for j, chars in enumerate(segmented_text):
+        for j, chars in enumerate(segmented_text_2):
+            if j == 0:
+                current_start = start
+                current_end = (len(chars)+ 1 + cumulative_length)*sec_rate + start
+            elif j != len(segmented_text_2) - 1:
+                current_start = current_end
+                current_end = (len(chars)+ 1 + cumulative_length)*sec_rate + start
+            else:
+                current_start = current_end
+                current_end = sub.end_time.total_seconds
+
+            cumulative_length += len(chars) + 1
+
+            single_times.append((chars, current_start, current_end))
+
+        all_info.append((sub, single_times))
+
+
+    return all_info
+
+
+def get_osts_xlsx(filename):
+    workbook = load_workbook(filename)
+    sheets = workbook.sheetnames
+
+    workbook_dict = {}
+
+    for worksheet in sheets:
+        current_worksheet = workbook[worksheet]
+        max_row = current_worksheet.max_row
+        max_col = current_worksheet.max_column
+
+        row_iterator = current_worksheet.iter_rows(min_row=1, max_row=max_row,
+                                                   max_col=max_col)
+
+        chapter_seen = False
+        skip_one = False
+        times_seen = False
+
+        chapter_dict = {}
+
+        for row in row_iterator:
+            if not chapter_seen:
+                current_osts = []
+            if skip_one:
+                skip_one = False
+                continue
+            for i, cell in enumerate(row):
+                if i == 0:
+                    if cell.value is None:
+                        if chapter_name not in list(chapter_dict.keys()):
+                            chapter_dict[chapter_name] = current_osts
+                        chapter_seen = False
+                        break
+
+                    chapter_match = re.search('^\s*CH\s*\d+', cell.value)
+                    time_match = re.findall('\d+:\d+', cell.value)
+                    if chapter_match is not None:
+                        chapter_seen = True
+                        skip_one = True
+                        chapter_name = chapter_match.group()
+                        continue
+
+                    elif time_match:
+                        start_time_secs = float(time_match[0].split(':')[0]) * 60 + float(time_match[0].split(':')[1])
+                        end_time_secs = float(time_match[1].split(':')[0]) * 60 + float(time_match[1].split(':')[1])
+                        start_time = Timecode(start_time_secs)
+                        end_time = Timecode(end_time_secs)
+                        times_seen = True
+
+                else:
+                    if cell.value is None:
+                        break
+                    elif times_seen:
+                        ost_text = f'[{cell.value}]'
+                        times_seen = False
+                        current_osts.append((start_time, end_time, ost_text))
+                        break
+
+        workbook_dict[worksheet] = chapter_dict
+
+
+    return workbook_dict
+
+
+def create_ost_vtts(group_dicts, save_dir, line=5):
+    original_dir = os.getcwd()
+    os.chdir(save_dir)
+
+    for group in group_dicts.keys():
+        if line != 5:
+            group_name = f'{group}__{line}%'
+        else:
+            group_name = group
+
+        if not os.path.isdir(os.path.join(save_dir, group_name)):
+            os.mkdir(os.path.join(save_dir, group_name))
+        os.chdir(os.path.join(save_dir, group_name))
+
+        for chapter in group_dicts[group].keys():
+            sub_counter = 1
+            cues = []
+            for i, ost in enumerate(group_dicts[group][chapter]):
+                tokenized_text, cue_text, untagged_text, errors = VTT_text_parser(ost[-1])
+                current_cue = WebVTT(
+                    sub_counter,
+                    cue_text,
+                    tokenized_text,
+                    untagged_text,
+                    start_time=ost[0],
+                    end_time=ost[1],
+                    line=line,
+                    snap_to_lines=False
+                )
+
+                cues.append(current_cue)
+
+            contents = {'stylesheets': [], 'regions': {}, 'cues': cues}
+            save_VTT_subs(f'{chapter}.vtt', contents)
+
+
+    os.chdir(original_dir)
+
+
+
+def copy_files(file_list, dest_dir):
+
+    for filename in file_list:
+        actual_filename = filename.split('\\')[-1]
+        dest_file = os.path.join(dest_dir, actual_filename)
+        shutil.copyfile(filename, dest_file)

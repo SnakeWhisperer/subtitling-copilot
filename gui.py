@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QLabel, QVBoxLayout, QPushButton,
                              QMessageBox, QTableWidget, QTableWidgetItem)
 from PyQt5.QtGui import QColor, QPicture, QPainter, QIcon
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QRect, QPoint, QEvent, Qt
+from PyQt5.QtCore import QRect, QPoint, QEvent, Qt, QSettings
 
 from mc_helper import batch_gen_CPS_sheet, batch_extract_OSTs, get_OSTs_single, get_OSTs, check_OST_audit
 from decoders import parse_VTT, parse_SRT
@@ -31,7 +31,7 @@ class LayoutLineWidget(QWidget):
             self._paintCache = None
             self.update()
         return super().event(event)
-    
+
     def paintEvent(self, event):
         opt = QStyleOption()
         opt.initFrom(self)
@@ -43,7 +43,7 @@ class LayoutLineWidget(QWidget):
 
         if not layout or layout.count() <= 1:
             return
-        
+
         if layout.spacing() < 1:
             layout.setSpacing(1)
             return
@@ -53,14 +53,14 @@ class LayoutLineWidget(QWidget):
         except TypeError:
             self._rebuildPaintCache()
             qp.drawPicture(0, 0, self._paintCache)
-    
-    
+
+
     def _rebuildPaintCache(self):
         layout = self.layout()
         self._paintCache = QPicture()
         qp = QPainter(self._paintCache)
         qp.setPen(self._borderColor)
-        
+
         if isinstance(layout, QBoxLayout):
             lastGeo = layout.itemAt(0).geometry()
 
@@ -73,7 +73,7 @@ class LayoutLineWidget(QWidget):
             else:
                 for col in range(1, layout.count()):
                     newGeo = layout.itemAt(row).geometry()
-                    x = (lastGeo.right() 
+                    x = (lastGeo.right()
                          + (newGeo.x() - lastGeo.right()) // 2)
                     qp.drawLine(x, 0, x, self.height())
                     lastGeo = newGeo
@@ -89,7 +89,7 @@ class LayoutLineWidget(QWidget):
                     cellRect |= layout.cellRect(row, col + colSpan - 1)
                 if col:
                     leftCell = layout.cellRect(row, col - 1)
-                    x = (leftCell.right() 
+                    x = (leftCell.right()
                          + (cellRect.x() - leftCell.right()) // 2)
                     qp.drawLine(x, cellRect.y(), x, cellRect.bottom() + 1)
 
@@ -148,7 +148,7 @@ class Window(LayoutLineWidget):
                 padding-left: 30px;
             }
 
-     
+
             QWidget#content {
                 border: 1px solid #c5cad4;
                 border-radius: 5px;
@@ -160,7 +160,7 @@ class Window(LayoutLineWidget):
                 border-top: none;
                 border-right: none;
                 border-left: none;
-                
+
             }
 
             QPushButton#option {
@@ -260,11 +260,11 @@ class Window(LayoutLineWidget):
                 background-color: #1c1b1c;
                 color: #c5cad4;
             }
-            
-            
+
+
             QListWidgetItem {
                 color: #c5cad4;
-            }            
+            }
 
 
             QTabBar::tab {
@@ -302,7 +302,7 @@ class Window(LayoutLineWidget):
                 border: 1px solid rgba(167, 202, 212, 80);
                 border-radius: 3px;
             }
-            
+
             QLineEdit {
                 background-color: #1c1b1c;
                 border: 1px solid rgba(167, 202, 212, 80);
@@ -318,12 +318,12 @@ class Window(LayoutLineWidget):
                 background-color: #1c1b1c;
                 margin-top: 1em;
                 color: #c5cad4;
-                
+
             }
 
             QPlainTextEdit:selected {
                 border: 1px solid rgba(167, 202, 212, 0.5);
-                
+
             }
 
 
@@ -334,7 +334,7 @@ class Window(LayoutLineWidget):
 
 
 
-            QScrollBar:vertical {              
+            QScrollBar:vertical {
                 border: none;
                 background: #1c1b1c;
                 width: 3px;
@@ -376,8 +376,10 @@ class Window(LayoutLineWidget):
                 color: #c5cad4;
             }
 
-            
-        ''')        
+
+        ''')
+
+        self.settings = QSettings('Eclipse', 'Subtitling Copilot')
 
         main_layout = QGridLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -445,7 +447,7 @@ class Window(LayoutLineWidget):
         self.opt_1_page_cont.setTabShape(tab_shape)
 
         self.opt_1_page_cont.setContentsMargins(0, 0, 0, 0)
-        
+
         # TABS FOR OPTION 1
         self.opt_1_tab_1 = QWidget()
         self.opt_1_tab_2 = QWidget()
@@ -463,7 +465,7 @@ class Window(LayoutLineWidget):
 
         self.opt_1_tab_1_files_layout = QHBoxLayout()
         self.opt_1_tab_1_layout.addLayout(self.opt_1_tab_1_files_layout)
-        
+
         self.file_list_1 = DropList(['.vtt'])
         self.file_list_1.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
@@ -504,7 +506,7 @@ class Window(LayoutLineWidget):
 
         self.extract_ost_button = QPushButton('Extract', objectName='run')
         self.opt_1_tab_1_layout.addWidget(self.extract_ost_button, 0, QtCore.Qt.AlignRight)
-        
+
 
 
         # self.input_1_label = QLabel('Subtitle Files', objectName='sub_title')
@@ -541,7 +543,7 @@ class Window(LayoutLineWidget):
 
         # self.extract_ost_button = QPushButton('Extract', objectName='run')
         # self.opt_1_tab_1_layout.addWidget(self.extract_ost_button, 7, 1)
-        
+
         # self.messages = QPlainTextEdit()
         # self.messages.setReadOnly(True)
         # self.opt_1_tab_1_layout.addWidget(self.messages, 8, 0, 1, 2)
@@ -610,7 +612,7 @@ class Window(LayoutLineWidget):
 
         self.checkbox_3 = QCheckBox('Overwrite subtitle files')
         self.opt_1_tab_2_layout.addWidget(self.checkbox_3, 0, QtCore.Qt.AlignLeft)
-        
+
         self.merge_ost_button = QPushButton('Merge', objectName='run')
         self.opt_1_tab_2_layout.addWidget(self.merge_ost_button, 0, QtCore.Qt.AlignRight)
 
@@ -697,7 +699,7 @@ class Window(LayoutLineWidget):
         self.file_list_4.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
-        
+
         self.opt_1_tab_3_files_layout.addWidget(self.file_list_4)
         self.opt_1_tab_3_files_browse_layout = QVBoxLayout()
         self.opt_1_tab_3_files_layout.addLayout(self.opt_1_tab_3_files_browse_layout)
@@ -782,7 +784,7 @@ class Window(LayoutLineWidget):
         # self.opt_1_tab_3_layout.addWidget(self.generation_messages, 4, 0, 1, 2)
 
 
-        
+
 
         # OPTION 2 CONTENTS
         self.opt_2_page_cont.setTabPosition(tab_position)
@@ -835,6 +837,8 @@ class Window(LayoutLineWidget):
         self.qc_layout_1.addLayout(self.add_qc_sc_layout)
         self.qc_sc_list = QLineEdit()
         self.qc_sc_list.setReadOnly(True)
+        if self.settings.value('last_qc_sc_dir'):
+            self.qc_sc_list.insert(self.settings.value('last_qc_sc_dir'))
         self.add_qc_sc_layout.addWidget(self.qc_sc_list)
         self.browse_qc_sc_dir = QPushButton('Browse...', objectName='browse')
         self.add_qc_sc_layout.addWidget(self.browse_qc_sc_dir)
@@ -855,7 +859,7 @@ class Window(LayoutLineWidget):
             'CPS include spaces',
             objectName='cps_spaces'
         )
-        
+
         self.max_cpl_label = QLabel('Max. CPL')
         self.max_cpl_spin = QSpinBox()
         self.max_cpl_spin.setValue(42)
@@ -872,7 +876,7 @@ class Window(LayoutLineWidget):
         self.max_duration_spin = QSpinBox()
         self.max_duration_spin.setRange(1000, 100000000)
         self.max_duration_spin.setValue(7000)
-        
+
 
 
         self.qc_setts_layout.addWidget(self.max_cps_label, 0, 0)
@@ -918,7 +922,7 @@ class Window(LayoutLineWidget):
         self.check_TCFOL_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_TCFOL_checkbox, 3, 2)
         self.check_OST_checkbox = QCheckBox(
-            'Check OSTs',
+            'Check OSTs (MC only)',
             objectName='sett_check'
         )
         self.check_OST_checkbox.setChecked(True)
@@ -962,7 +966,7 @@ class Window(LayoutLineWidget):
         self.qc_messages.setReadOnly(True)
         self.qc_layout_2.addWidget(self.qc_messages, 0)
         self.qc_messages.setPlainText('No results to show.')
-        
+
 
         # OPTION 3 CONTENTS
 
@@ -988,7 +992,7 @@ class Window(LayoutLineWidget):
         self.target_files_browse_layout.addWidget(self.remove_target_files)
         self.target_files_browse_layout.addWidget(self.clear_target_files)
         self.target_files_browse_layout.addStretch()
-        
+
         # self.add_target_files_layout.addStretch()
 
         self.issues_file_label_2 = QLabel('Source Language Files', objectName='sub_title')
@@ -1149,7 +1153,7 @@ class Window(LayoutLineWidget):
         self.fixes_setts_layout.setColumnStretch(1, 0)
         self.fixes_setts_layout.setColumnStretch(2, 1)
         self.fixes_setts_layout.setColumnMinimumWidth(1, 75)
-        
+
         self.run_fixes_button = QPushButton('Run Fixes', objectName='run')
         self.fixes_layout.addWidget(self.run_fixes_button, 0, QtCore.Qt.AlignRight)
 
@@ -1164,7 +1168,7 @@ class Window(LayoutLineWidget):
         self.fixes_layout_2.addWidget(self.fixes_messages, 1)
         self.fixes_layout_2.addStretch()
         self.fixes_messages.setPlainText('No results to show.')
-        
+
         # OPTION 5 CONTENTS
         self.opt_5_page_cont.setTabPosition(tab_position)
         self.opt_5_page_cont.setTabShape(tab_shape)
@@ -1179,7 +1183,7 @@ class Window(LayoutLineWidget):
         self.opt_5_tab_3 = QWidget()
         self.opt_5_tab_4 = QWidget()
         self.opt_5_tab_5 = QWidget()
-        
+
         self.opt_5_page_cont.addTab(self.opt_5_tab_1, 'Copy Shot Changes')
         self.opt_5_page_cont.addTab(self.opt_5_tab_2, 'Generate Shot Changes')
         self.opt_5_page_cont.addTab(self.opt_5_tab_3, 'Frame Rates')
@@ -1191,7 +1195,7 @@ class Window(LayoutLineWidget):
         # self.sc_title_1_layout = QVBoxLayout(self.sc_title_1_widget)
         # self.copy_sc_label = QLabel('Copy Shot Changes', objectName='border_widget')
         # self.sc_layout.addWidget(self.copy_sc_label)
-        
+
         self.copy_sc_videos_label = QLabel('Videos', objectName='sub_title')
         self.sc_layout.addWidget(self.copy_sc_videos_label)
         self.sc_copy_videos_layout = QHBoxLayout()
@@ -1213,7 +1217,7 @@ class Window(LayoutLineWidget):
         self.sc_copy_videos_browse_layout.addWidget(self.sc_copy_videos_remove)
         self.sc_copy_videos_browse_layout.addWidget(self.sc_copy_videos_clear)
         self.sc_copy_videos_browse_layout.addStretch()
-        
+
         self.sc_copy_dir_label = QLabel('Scene Changes Directory', objectName='sub_title')
         self.sc_layout.addWidget(self.sc_copy_dir_label)
         self.sc_copy_dir_layout = QHBoxLayout()
@@ -1246,7 +1250,7 @@ class Window(LayoutLineWidget):
 
 
         self.sc_gen_layout = QVBoxLayout(self.opt_5_tab_2)
-        
+
         self.gen_sc_videos_label = QLabel('Videos', objectName='sub_title')
         self.sc_gen_layout.addWidget(self.gen_sc_videos_label)
         self.sc_gen_videos_layout = QHBoxLayout()
@@ -1267,7 +1271,7 @@ class Window(LayoutLineWidget):
         self.sc_gen_videos_browse_layout.addWidget(self.sc_gen_videos_remove)
         self.sc_gen_videos_browse_layout.addWidget(self.sc_gen_videos_clear)
         self.sc_gen_videos_browse_layout.addStretch()
-        
+
         self.sc_gen_dir_label = QLabel('Save Scene Changes To', objectName='sub_title')
         self.sc_gen_layout.addWidget(self.sc_gen_dir_label)
         self.sc_gen_dir_layout = QHBoxLayout()
@@ -1301,7 +1305,7 @@ class Window(LayoutLineWidget):
 
 
         self.fr_layout = QVBoxLayout(self.opt_5_tab_3)
-        
+
         self.gen_fr_videos_label = QLabel('Videos', objectName='sub_title')
         self.fr_layout.addWidget(self.gen_fr_videos_label)
         self.fr_gen_videos_layout = QHBoxLayout()
@@ -1328,19 +1332,19 @@ class Window(LayoutLineWidget):
         self.run_fr_layout.setContentsMargins(0, 15, 0, 0)
         self.fr_layout.addLayout(self.run_fr_layout)
         self.run_fr_layout.addWidget(self.run_fr_button, 0, QtCore.Qt.AlignRight)
-    
+
         self.fr_gen_results_label = QLabel('Results', objectName='sub_title')
         self.fr_layout.addWidget(self.fr_gen_results_label)
         self.fr_gen_messages = QPlainTextEdit()
         self.fr_gen_messages.setReadOnly(True)
         self.fr_layout.addWidget(self.fr_gen_messages)
-        
-        
+
+
 
 
 
         self.stats_layout = QVBoxLayout(self.opt_5_tab_4)
-        
+
         self.stats_files_label = QLabel('Subtitle Files', objectName='sub_title')
         self.stats_layout.addWidget(self.stats_files_label)
         self.stats_files_layout = QHBoxLayout()
@@ -1361,6 +1365,19 @@ class Window(LayoutLineWidget):
         self.stats_files_browse_layout.addWidget(self.stats_files_clear)
         self.stats_files_browse_layout.addStretch()
 
+        self.stats_save_layout_check = QHBoxLayout()
+        self.stats_layout.addLayout(self.stats_save_layout_check)
+        self.stats_save_checkbox = QCheckBox('Save report')
+        self.stats_save_layout_check.addWidget(self.stats_save_checkbox)
+        self.stats_save_layout_check.setContentsMargins(0, 30, 0, 0)
+        self.stats_save_layout = QHBoxLayout()
+        self.stats_layout.addLayout(self.stats_save_layout)
+        self.stats_save_edit = QLineEdit()
+        self.stats_save_browse = QPushButton('...', objectName='browse')
+        self.stats_save_layout.addWidget(self.stats_save_edit)
+        self.stats_save_layout.addWidget(self.stats_save_browse)
+        self.stats_save_layout.addStretch()
+
         self.run_stats_button = QPushButton('Run', objectName='run')
         self.run_stats_layout = QHBoxLayout()
         self.run_stats_layout.setContentsMargins(0, 15, 0, 0)
@@ -1372,7 +1389,7 @@ class Window(LayoutLineWidget):
         self.stats_gen_messages = QPlainTextEdit()
         self.stats_gen_messages.setReadOnly(True)
         self.stats_layout.addWidget(self.stats_gen_messages)
-        
+
 
 
 
@@ -1387,7 +1404,7 @@ class Window(LayoutLineWidget):
         self.conv_files_layout = QHBoxLayout()
         self.converters_layout.addLayout(self.conv_files_layout)
         self.conv_files_layout.addWidget(self.conv_files_list)
-        
+
         self.conv_files_buttons_layout = QVBoxLayout()
         self.conv_files_layout.addLayout(self.conv_files_buttons_layout)
 
@@ -1402,13 +1419,13 @@ class Window(LayoutLineWidget):
 
         self.conv_files_buttons_layout.addStretch()
 
-        
+
         self.out_format_conv_layout = QHBoxLayout()
         self.converters_layout.addLayout(self.out_format_conv_layout)
 
         self.conv_format_label = QLabel('Output format:')
         self.out_format_conv_layout.addWidget(self.conv_format_label)
-        
+
         self.conv_format_list = QComboBox()
         self.conv_format_list.addItems(['JSON', 'SRT', 'VTT'])
         self.out_format_conv_layout.addWidget(self.conv_format_list)
@@ -1439,7 +1456,7 @@ class Window(LayoutLineWidget):
 
 
 
-        
+
 
 
 
@@ -1487,7 +1504,7 @@ class Window(LayoutLineWidget):
                     padding: 10px;
                 }
             '''
-        
+
 
         self.content.addWidget(self.welcome_widget)
         self.content.addWidget(self.opt_1_page_cont)
@@ -1522,7 +1539,7 @@ class Window(LayoutLineWidget):
         self.opt_1_tab_2_remove_2.clicked.connect(self.remove_files)
         self.opt_1_tab_2_clear_2.clicked.connect(self.clear_files)
         self.opt_1_tab_2_browse_save.clicked.connect(self.browse_save_dir)
-        self.merge_ost_button.clicked.connect(self.merge_ost)        
+        self.merge_ost_button.clicked.connect(self.merge_ost)
 
         # self.list_4_browse.clicked.connect(self.browse_list_3)
         # self.browse_save_2.clicked.connect(self.browse_save_dir)
@@ -1580,7 +1597,7 @@ class Window(LayoutLineWidget):
         self.stats_files_remove.clicked.connect(self.remove_files)
         self.stats_files_clear.clicked.connect(self.clear_files)
         self.run_stats_button.clicked.connect(self.get_stats)
-        
+
         self.add_conv_files_button.clicked.connect(self.add_files)
         self.remove_conv_files_button.clicked.connect(self.remove_files)
         self.clear_conv_files_button.clicked.connect(self.clear_files)
@@ -1592,12 +1609,12 @@ class Window(LayoutLineWidget):
         self.extract_ost_files_list = []
         self.save_extracted_ost_dir = ''
         self.extract_ost_errors = ''
-        
+
         self.merge_subtitle_files_list = []
         self.merge_ost_files_list = []
         self.save_merged_ost_dir = ''
         self.merge_ost_errors = ''
-        
+
         self.ost_audit_files_list = []
         self.save_gen_ost_dir = ''
         self.gen_ost_errors = ''
@@ -1709,7 +1726,7 @@ class Window(LayoutLineWidget):
                 current_item.setText(file_name)
 
                 drop_list.insertItem(items_count + i, current_item)
-        
+
         # Generate info modal to let the user know
         # about ignored repeated files.
         if repeated_files:
@@ -1722,7 +1739,7 @@ class Window(LayoutLineWidget):
                 title = 'Repeated files'
                 message = (f'{repeated_file_names.replace("file:///", "")}'
                            f'\n\nare already in the list.\nIgnored.')
-            
+
             info_modal = QMessageBox.information(
                 self,
                 title,
@@ -1811,7 +1828,7 @@ class Window(LayoutLineWidget):
 
     def option_2_clicked(self, event):
         self.content.setCurrentWidget(self.opt_2_page_cont)
-        
+
         self.option_1_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_2_button.setStyleSheet(self.active_opt_button_ss)
         self.option_3_button.setStyleSheet(self.inactive_opt_button_ss)
@@ -1821,7 +1838,7 @@ class Window(LayoutLineWidget):
 
     def option_3_clicked(self, event):
         self.content.setCurrentWidget(self.opt_3_page_cont)
-        
+
         self.option_1_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_2_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_3_button.setStyleSheet(self.active_opt_button_ss)
@@ -1831,7 +1848,7 @@ class Window(LayoutLineWidget):
 
     def option_4_clicked(self, event):
         self.content.setCurrentWidget(self.opt_4_page_cont)
-        
+
         self.option_1_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_2_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_3_button.setStyleSheet(self.inactive_opt_button_ss)
@@ -1841,7 +1858,7 @@ class Window(LayoutLineWidget):
 
     def option_5_clicked(self, event):
         self.content.setCurrentWidget(self.opt_5_page_cont)
-        
+
         self.option_1_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_2_button.setStyleSheet(self.inactive_opt_button_ss)
         self.option_3_button.setStyleSheet(self.inactive_opt_button_ss)
@@ -1851,7 +1868,7 @@ class Window(LayoutLineWidget):
 
     # def option_6_clicked(self, event):
     #     self.content.setCurrentWidget(self.opt_6_page_cont)
-        
+
     #     self.option_1_button.setStyleSheet(self.inactive_opt_button_ss)
     #     self.option_2_button.setStyleSheet(self.inactive_opt_button_ss)
     #     self.option_3_button.setStyleSheet(self.inactive_opt_button_ss)
@@ -1861,7 +1878,7 @@ class Window(LayoutLineWidget):
 
     def browse_list_1(self, event):
         print(self.content.currentIndex())
-        
+
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
             'Select Files...',
@@ -1898,7 +1915,7 @@ class Window(LayoutLineWidget):
 
             elif self.content.currentWidget().currentIndex() == 2:
                 pass
-                
+
 
         elif self.content.currentIndex() == 2:
             pass
@@ -2044,7 +2061,7 @@ class Window(LayoutLineWidget):
                     current_item = QListWidgetItem()
                     current_item.setText(file_name)
                     self.copy_sc_videos_list.insertItem(i, current_item)
-            
+
             elif self.content.currentWidget().currentIndex() == 1:
                 if file_names:
                     self.gen_sc_videos_list.clear()
@@ -2066,7 +2083,7 @@ class Window(LayoutLineWidget):
                     current_item = QListWidgetItem()
                     current_item.setText(file_name)
                     self.gen_fr_videos_list.insertItem(i, current_item)
-    
+
 
     def browse_dir_1(self, event):
 
@@ -2131,14 +2148,14 @@ class Window(LayoutLineWidget):
             self.fixes_sc_list.insert(self.fixes_sc_dir)
 
 
-        
-    
+
+
 
 
     def browse_save_dir(self, event):
         print(self.content.currentIndex())
         print(self.content.currentWidget().currentIndex())
-        
+
         save_dir = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
@@ -2190,44 +2207,69 @@ class Window(LayoutLineWidget):
 
 
     def browse_qc_subs_dir(self, event):
+        if self.settings.value('last_qc_subs_dir'):
+            start_dir = self.settings.value('last_qc_subs_dir')
+        else:
+            start_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+
+
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
             # QtCore.QDir.rootPath(),
-            r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            # r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            start_dir,
             QFileDialog.ShowDirsOnly
         )
 
-        self.qc_files_dir = directory
-        self.qc_files_list.clear()
-        self.qc_files_list.insert(self.qc_files_dir)
+        if directory:
+            self.settings.setValue('last_qc_subs_dir', directory)
 
-    
+            self.qc_files_dir = directory
+            self.qc_files_list.clear()
+            self.qc_files_list.insert(self.qc_files_dir)
+
+
     def browse_qc_videos_dir(self, event):
+        if self.settings.value('last_qc_videos_dir'):
+            start_dir = self.settings.value('last_qc_videos_dir')
+        else:
+            start_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
             # QtCore.QDir.rootPath(),
-            r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            # r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            start_dir,
             QFileDialog.ShowDirsOnly
         )
 
-        self.qc_videos_dir = directory
-        self.qc_videos_list.clear()
-        self.qc_videos_list.insert(self.qc_videos_dir)
-    
+        if directory:
+            self.settings.setValue('last_qc_videos_dir', directory)
+            self.qc_videos_dir = directory
+            self.qc_videos_list.clear()
+            self.qc_videos_list.insert(self.qc_videos_dir)
+
     def browse_qc_sc_dir_call(self, event):
+        if self.settings.value('last_qc_sc_dir'):
+            start_dir = self.settings.value('last_qc_sc_dir')
+        else:
+            start_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
         directory = QFileDialog.getExistingDirectory(
             self,
             'Select Directory',
             # QtCore.QDir.rootPath(),
-            r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            # r'C:\Users\karka\Tr_CC_Sub\MasterClass',
+            start_dir,
             QFileDialog.ShowDirsOnly
         )
 
-        self.qc_sc_dir_send = directory
-        self.qc_sc_list.clear()
-        self.qc_sc_list.insert(self.qc_sc_dir_send)
+        if directory:
+            self.settings.setValue('last_qc_sc_dir', directory)
+            self.qc_sc_dir_send = directory
+            self.qc_sc_list.clear()
+            self.qc_sc_list.insert(self.qc_sc_dir_send)
 
 
     def save_single_file(self, event):
@@ -2260,7 +2302,7 @@ class Window(LayoutLineWidget):
         self.save_sheet_entry.clear()
         self.save_sheet_entry.insert(self.issues_sheet_name)
 
-    
+
     def add_conv_files(self, event):
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
@@ -2380,7 +2422,7 @@ class Window(LayoutLineWidget):
             'Success',
             'All files converted successfully'
         )
-        
+
 
     def extract_ost(self, event):
 
@@ -2428,12 +2470,12 @@ class Window(LayoutLineWidget):
                 errors,
             )
 
-        
+
         # if not self.extract_ost_files_list:
         #     self.extract_ost_errors += 'ERROR: Cannot extract OSTs. Please select at least one subtitle file.\n'
         # if not self.save_extracted_ost_dir:
         #     self.extract_ost_errors += 'ERROR: Cannot save OSTs. Please select a directory for the OST files.'
-        
+
         # if not self.extract_ost_errors:
         #     # text = 'Extracting OSTs files with...\n'
         #     # for file_name in self.extract_ost_files_list:
@@ -2487,7 +2529,7 @@ class Window(LayoutLineWidget):
         if not save_path:
             errors += 'ERROR: Cannot save OSTs. Please select a directory for the new files.'
 
-        
+
         if not errors:
             # sub_dir = '/'.join(sub_files[0].split('/')[:-1])
             # ost_dir = '/'.join(ost_files[0].split('/')[:-1])
@@ -2524,13 +2566,13 @@ class Window(LayoutLineWidget):
         #     self.merge_ost_errors += 'ERROR: Cannot merge OSTs. The number of subtitle files is different from the number of OST files.\n'
         # if not self.save_merged_ost_dir and not self.checkbox_3.isChecked():
         #     self.merge_ost_errors += 'ERROR: Cannot save Subtitle file(s). Please select a directory for the subtitle files.'
-        
+
         # if not self.merge_ost_errors:
         #     self.merge_messages.setPlainText('Merging...')
         #     sub_dir = '/'.join(self.merge_subtitle_files_list[0].split('/')[:-1])
         #     ost_dir = '/'.join(self.merge_ost_files_list[0].split('/')[:-1])
 
-            
+
         #     if self.checkbox_3.isChecked():
         #         self.save_merged_ost_dir = sub_dir
 
@@ -2576,12 +2618,12 @@ class Window(LayoutLineWidget):
                 for file_name in single_files:
                     get_OSTs_single(file_name, save_path)
                 success = True
-                
+
 
             elif multi_files:
                 get_OSTs(multi_files, save_path)
                 success = True
-                
+
 
             if success:
                 info_modal = QMessageBox.information(
@@ -2657,21 +2699,26 @@ class Window(LayoutLineWidget):
         # else:
         #     self.generation_messages.setPlainText(self.gen_ost_errors)
         #     self.gen_ost_errors = ''
-        
-    def run_qc(self, event):
-        if not self.qc_files_dir:
-            self.qc_errors += 'ERROR: Cannot run quality check. Please select a directory for the subtitle files.\n'
-        if not self.qc_videos_dir:
-            self.qc_errors += 'ERROR: Cannot run quality check. Please select a directory for the videos.\n'
-        if not self.qc_sc_dir_send:
-            self.qc_errors += 'ERROR: Cannot run quality check. Please select a directory for the scene changes.\n'
-        if not self.qc_report_name and self.save_report_checkbox.isChecked():
-            self.qc_errors += 'ERROR: Cannot save quality check report. Please select a file name to save it.\n'
 
-        if not self.qc_errors:
+    def run_qc(self, event):
+        errors = ''
+        if not self.qc_files_dir:
+            errors += 'ERROR: Cannot run quality check. Please select a directory for the subtitle files.\n\n'
+        if not self.qc_videos_dir and self.check_sc_checkbox.isChecked():
+            errors += 'ERROR: Cannot run quality check with shot changes. Please select a directory for the videos.\n\n'
+        if not self.qc_videos_dir and self.check_gaps_checkbox.isChecked():
+            errors += 'ERROR: Cannot run quality check with gaps. Please select a directory for the videos.\n\n'
+        if not self.qc_sc_dir_send and self.check_sc_checkbox.isChecked():
+            errors += 'ERROR: Cannot run quality check with shot changes. Please select a directory for the scene changes.\n\n'
+        if not self.qc_report_name and self.save_report_checkbox.isChecked():
+            errors += 'ERROR: Cannot save quality check report. Please select a file name to save it.\n\n'
+
+        print(errors)
+
+        if not errors:
             text = 'Running quality check...\n'
-            print(text)
-            
+            # print(text)
+
             # NOTE: For some reason this is not working.
             self.qc_messages.setPlainText(text)
 
@@ -2712,17 +2759,36 @@ class Window(LayoutLineWidget):
                 report=report,
                 report_name=report_name
             )
-            print('Quality check DONE')
-            print(type(report))
-            print(report)
+            # print('Quality check DONE')
+            # print(type(report))
+            # print(report)
 
-            self.qc_messages.setPlainText('\n'.join(report))
-            self.opt_2_page_cont.setCurrentIndex(1)
-            
+            if isinstance(report, str):
+                error_modal = QMessageBox.critical(
+                    self,
+                    'Error',
+                    report
+                )
+
+                return
+            else:
+                print(report)
+                self.qc_messages.setPlainText('\n'.join(report))
+                self.opt_2_page_cont.setCurrentIndex(1)
+
         else:
-            
-            self.qc_messages.setPlainText(self.qc_errors)
-            self.qc_errors = ''
+
+
+            error_modal = QMessageBox.critical(
+                self,
+                'Error',
+                errors
+            )
+
+            return
+
+            # self.qc_messages.setPlainText(self.qc_errors)
+            # self.qc_errors = ''
 
 
     def generate_issue_sheet(self, event):
@@ -2753,7 +2819,10 @@ class Window(LayoutLineWidget):
                 source_files,
                 target_files,
                 save_path,
-                old=False
+                old=False,
+                #-----
+                CPS_limit=28,
+                CPL_limit=96
             )
 
             info_modal = QMessageBox.information(
@@ -2795,7 +2864,7 @@ class Window(LayoutLineWidget):
 
         #     en_path = '/'.join(self.issues_en_list[0].split('/')[:-1])
         #     tar_path = '/'.join(self.issues_tar_list[0].split('/')[:-1])
-            
+
         #     result = batch_gen_CPS_sheet(
         #         self.issues_en_list,
         #         self.issues_tar_list,
@@ -2848,7 +2917,7 @@ class Window(LayoutLineWidget):
             self.gen_sc_errors += 'ERROR: Cannot generate shot changes. Please select at least one video file.\n'
         if not self.gen_sc_save_dir:
             self.gen_sc_errors += 'ERROR: Cannot generate shot changes. Please select a directory to save shot changes files.\n'
-        
+
         if not self.gen_sc_errors:
             text = 'Generating shot changes files for videos...\n'
             for file_name in self.gen_sc_videos_list_send:
@@ -2868,7 +2937,7 @@ class Window(LayoutLineWidget):
         else:
             self.sc_gen_messages.setPlainText(self.gen_sc_errors)
             self.gen_sc_errors = ''
-    
+
 
     def run_fr(self, event):
         if not self.gen_fr_videos_list_send:
@@ -2894,7 +2963,7 @@ class Window(LayoutLineWidget):
             print(longest_name)
 
             distance = longest_name + 17
-                        
+
 
             frame_rates = batch_get_frame_rates_gui(
                 self.gen_fr_videos_list_send
@@ -2916,9 +2985,13 @@ class Window(LayoutLineWidget):
 
 
     def get_stats(self, event):
-        if not self.stats_files_list_send:
+        file_list = self.get_files(self.stats_files_list)
+
+
+        # if not self.stats_files_list_send:
+        if not file_list:
             self.get_stats_errors += 'ERROR: Cannot get stats. Please select at least one subtitle file.\n'
-        
+
         if not self.get_stats_errors:
             text = ''
             # text = 'Getting stats for files...\n'
@@ -2926,11 +2999,11 @@ class Window(LayoutLineWidget):
             #     text += '\n'
             #     text += file_name
 
-            stats = batch_get_stats(self.stats_files_list_send)
+            stats = batch_get_stats(file_list)
 
             for key in stats.keys():
                 text += f'{key}: {stats[key]}\n'
-            
+
             self.stats_gen_messages.setPlainText(text)
         else:
             self.stats_gen_messages.setPlainText(self.get_stats_errors)
@@ -2955,7 +3028,7 @@ class Window(LayoutLineWidget):
             # text += self.fixes_videos_dir
             # text += '\n\nAnd shot changes in...\n'
             # text += self.fixes_sc_dir
-            
+
             TCFOL = self.fix_TCFOL_checkbox.isChecked()
             snap_to_frames = self.snap_to_frames_checkbox.isChecked()
             fix_min_gaps = self.apply_min_gaps_checkbox.isChecked()
@@ -3036,7 +3109,7 @@ class Window(LayoutLineWidget):
 #                 if ext not in valid_extensions:
 #                     invalid_files.append(file_name.replace('file:///', ''))
 #                     continue
-                
+
 #                 elif file_name.replace('file:///', '') in prev_files:
 #                     repeated_files.append(
 #                         '- ' + file_name.replace('file:///', ''))
@@ -3154,7 +3227,7 @@ class DropList(QListWidget):
                 message = (f'Only {sup_message} files are supported.\n'
                            f'The following files were ignored:\n\n'
                            f'{invalid_file_names}')
-            
+
             error_modal = QMessageBox.warning(
                 self,
                 'Warning',
@@ -3171,7 +3244,7 @@ class DropList(QListWidget):
                 title = 'Repeated files'
                 message = (f'{repeated_file_names.replace("file:///", "")}\n\n'
                            f'are already in the list.\nWill be ignored.')
-            
+
             info_modal = QMessageBox.information(
                 self,
                 title,

@@ -23,7 +23,7 @@ from utils import get_frame_rate
 #                 glyph_list.append(chr(int_val))
 
 #     return glyph_list
-        
+
 
 def check_sort(file_name, old=True):
 
@@ -69,24 +69,26 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
     if s_format and s_format.lower() not in ['vtt', 'srt']:
         print('The specified format is invalid or not supported.')
         return
-    
+
     # glyph_list = get_NF_glyph_list()
     glyph_list = []
 
     current_dir = os.getcwd()
-    os.chdir(videos_dir)
-    all_videos = os.listdir()
+
     video_files = []
+    if shot_changes:
+        os.chdir(videos_dir)
+        all_videos = os.listdir()
 
-    # Filter all files that are not videos.
-    for video in all_videos:
-        video_ext = os.path.splitext(video)[-1]
+        # Filter all files that are not videos.
+        for video in all_videos:
+            video_ext = os.path.splitext(video)[-1]
 
-        if video_ext != '.mp4':
-            print('Currently can only work with .mp4 files.')
-            return
-        else:
-            video_files.append(video)
+            if video_ext != '.mp4':
+                print('Currently can only work with .mp4 files.')
+                return
+            else:
+                video_files.append(video)
 
     # video_files = sorted(video_files)
     os.chdir(files_dir)
@@ -101,6 +103,9 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
             sub_files.append(f_file)
 
     # sub_files = sorted(sub_files)
+
+    if shot_changes and len(video_files) != len(sub_files):
+        return 'The video and subtitle directories do not contain the same number of files.'
 
     if report and not report_name:
         print('Please specify a name and extension for the report file.')
@@ -117,7 +122,8 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
         else:
             report_cont = [
                 '-'*160,
-                f'Quality report for {ext} files '
+                # f'Quality report for {ext} files '
+                f'Quality report for subtitle files '
                 f'in the directory {files_dir}',
                 '-'*160,
                 '\n',
@@ -137,6 +143,9 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
                 f'Max. lines per subtitle: {max_lines}',
                 f'Min. subtitle duration: {min_duration} seconds',
                 f'Max. subtitle duration: {max_duration} seconds',
+                f'Check gaps: {gaps}',
+                f'Check timing to shot chnages: {shot_changes}',
+                f'Check "Text can fit in one line": {check_TCFOL}',
                 f'Use ellipses instead of three dots: {ellipses}',
                 '\n',
                 '-'*120,
@@ -144,11 +153,16 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
             ])
 
     for i, sub_file in enumerate(sub_files):
+        if ext != '.vtt' and check_OST:
+            string = (f'"{sub_file}"\n\n'
+                      f'Currently can only check OSTs in .vtt files.\n'
+                      f'Please uncheck this option or remove other formats from the directory.')
+            return string
         # print(sub_file)
         # Only for debugging purposes
         if i == 0:
             hello = 2
-        
+
         if report or GUI:
             report_cont.extend([
                 '-'*120,
@@ -161,8 +175,12 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
             print('\n')
 
         # video_name = videos_dir + '\\' + video_files[i]
-        video_name = os.path.join(videos_dir, video_files[i])
-        frame_rate = get_frame_rate(video_name)
+        if shot_changes:
+            video_name = os.path.join(videos_dir, video_files[i])
+            frame_rate = get_frame_rate(video_name)
+        else:
+            video_name = ''
+
 
         single_report = quality_check(
             sub_file,
@@ -204,7 +222,7 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
                 report_file.write('\n')
 
     return report_cont
-  
+
 
 def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
                   CPS=True, CPS_limit=25, CPS_spaces=False, CPL=True,
@@ -241,7 +259,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
         else:
             hash_name = hash_file(video_name)
             sc_name = sc_dir + '\\' + hash_name + '.scenechanges'
-        
+
         sc_list = read_text_file(sc_name)
 
         for m in range(len(sc_list)):
@@ -306,7 +324,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
             )
 
             error_counter += 1
-        
+
         # Check if text fits in one line.
         if (check_TCFOL and len(sub.untagged_text) > 1
             and sub.total_length < CPL_limit and not sub.dialogue):
@@ -323,9 +341,9 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
                 f'Subtitle uses three dots (...) '
                 f'instead of ellipsis character (…)'
             )
-            
+
             error_counter += 1
-        
+
         if glyphs:
             for line in sub.untagged_text:
                 for char in line:
@@ -346,9 +364,9 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
         #             f'Subtitle uses three dots (...) '
         #             f'instead of ellipsis character (…)'
         #         )
-                
+
         #         error_counter += 1
-        
+
         # Check gaps.
         if gaps:
             # Only for debugging purposes
@@ -431,7 +449,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
 
 
     single_rep = ''
-    
+
     # If there are errors...
     if general:
         single_rep += '- Issues\n\n\t#\t\t\tIssue description\n\n'
@@ -466,21 +484,27 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
             current_line += warnings[key]
             single_rep += current_line + '\n'
 
-    if general or warnings:
-        
-        if not report and not GUI:
-            # print('Here')
-            print(single_rep)
 
-        elif GUI or (report and batch):
-            # print('There')
-            return single_rep
+    if not general and not warnings:
+        single_rep += '\n\n\tNo issues found.'
 
-        elif report and not batch:
-            pass
+    single_rep += f'\n\n\n\n\t--> Issue percentage ({len(general)} issues/{len(subs)} subtitles in file): {round((len(general)/len(subs))*100)}%'
 
-    else:
-        return('\n\n\tNo issues found.')
+    # if general or warnings:
+
+    if not report and not GUI:
+        # print('Here')
+        print(single_rep)
+
+    elif GUI or (report and batch):
+        # print('There')
+        return single_rep
+
+    elif report and not batch:
+        pass
+
+    # else:
+    #     return('\n\n\tNo issues found.')
         # print('\n\n\tNo issues found.')
 
 
@@ -517,11 +541,11 @@ def check_gaps_one(index, subtitles, invalid_range=(3,11), error_counter=1,
         [description]
     """
 
-    
+
     gap_errors = {}
 
     for j in range(len(subtitles)):
-        
+
         if j != index:
             if snapped:
                 gap = (
@@ -680,7 +704,7 @@ def nearest_shot_change(shot_change_list, time, frame_rate=24,
     [type]
         [description]
     """
-    
+
     # Variables for the binary search.
     low = 0
     high = len(shot_change_list) - 1
@@ -801,7 +825,7 @@ def check_near_shot_changes(sub_num, first_found, time, shot_change_list,
                 error_message = (
                     f'The subtitle ends {plu_sing} a shot change'
                 )
-            
+
             else:
                 error_message = (
                     f'The subtitle starts {plu_sing} a shot change'
@@ -878,7 +902,7 @@ def check_near_shot_changes(sub_num, first_found, time, shot_change_list,
 def check_sort(file_name):
 
     name, ext = os.path.splitext(file_name)
-    
+
     if ext == '.vtt':
         subs = parse_VTT(file_name)['cues']
     elif ext == '.srt':
@@ -892,7 +916,7 @@ def check_sort(file_name):
             continue
         if sub.start_time.total_seconds < subs[i-1].start_time.total_seconds:
             out_of_order.append(i)
-        
+
     if out_of_order:
         for number in out_of_order:
             print(f'Start time of subtitle {subs[number].number} is less than the previous.')
