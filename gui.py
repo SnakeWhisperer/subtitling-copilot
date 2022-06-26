@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QLabel, QVBoxLayout, QPushButton,
 from PyQt5.QtGui import QColor, QPicture, QPainter, QIcon
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QRect, QPoint, QEvent, Qt, QSettings
+from natsort import os_sorted
 
 from mc_helper import batch_gen_CPS_sheet, batch_extract_OSTs, get_OSTs_single, get_OSTs, check_OST_audit
 from decoders import parse_VTT, parse_SRT
@@ -3341,6 +3342,18 @@ class DropList(QListWidget):
                 title,
                 message
             )
+
+        current_file_count = self.count()
+        current_files = [self.item(row).text()
+                         for row in range(current_file_count)]
+
+        current_files_sorted = os_sorted(current_files)
+        self.clear()
+
+        for j, current_file in enumerate(current_files_sorted):
+            item = QListWidgetItem()
+            item.setText(current_file)
+            self.insertItem(j, item)
 
         if self.list_index == 1:
             self.files_1 = valid_files
