@@ -1,4 +1,4 @@
-import os, time
+import os, time, functools
 
 from PyQt5.QtWidgets import (QApplication, QLabel, QVBoxLayout, QPushButton,
                              QWidget, QFileDialog, QGridLayout, QFrame,
@@ -469,7 +469,7 @@ class Window(LayoutLineWidget):
         self.opt_1_tab_1_files_layout = QHBoxLayout()
         self.opt_1_tab_1_layout.addLayout(self.opt_1_tab_1_files_layout)
 
-        self.file_list_1 = DropList(['.vtt'])
+        self.file_list_1 = DropList(1, ['.vtt'])
         self.file_list_1.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -561,7 +561,7 @@ class Window(LayoutLineWidget):
         self.opt_1_tab_2_layout.addWidget(self.input_2_label)
         self.opt_1_tab_2_files_layout_1 = QHBoxLayout()
         self.opt_1_tab_2_layout.addLayout(self.opt_1_tab_2_files_layout_1)
-        self.file_list_2 = DropList(['.vtt', '.srt'])
+        self.file_list_2 = DropList(1, ['.vtt', '.srt'])
         self.file_list_2.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -583,7 +583,7 @@ class Window(LayoutLineWidget):
 
         self.opt_1_tab_2_files_layout_2 = QHBoxLayout()
         self.opt_1_tab_2_layout.addLayout(self.opt_1_tab_2_files_layout_2)
-        self.file_list_3 = DropList(['.vtt', '.srt'])
+        self.file_list_3 = DropList(2, ['.vtt', '.srt'])
         self.file_list_3.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -698,7 +698,7 @@ class Window(LayoutLineWidget):
         self.opt_1_tab_3_files_layout = QHBoxLayout()
         self.opt_1_tab_3_layout.addLayout(self.opt_1_tab_3_files_layout)
 
-        self.file_list_4 = DropList(['.docx'])
+        self.file_list_4 = DropList(1, ['.docx'])
         self.file_list_4.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -980,7 +980,7 @@ class Window(LayoutLineWidget):
         self.add_target_files_layout = QHBoxLayout()
         self.issues_layout.addLayout(self.add_target_files_layout)
         # self.target_files_list = QListWidget()
-        self.target_files_list = DropList(['.vtt', 'srt'])
+        self.target_files_list = DropList(1, ['.vtt', 'srt'])
         self.target_files_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -1003,7 +1003,7 @@ class Window(LayoutLineWidget):
         self.add_source_files_layout = QHBoxLayout()
         self.issues_layout.addLayout(self.add_source_files_layout)
         # self.source_files_list = QListWidget()
-        self.source_files_list = DropList(['.vtt', '.srt'])
+        self.source_files_list = DropList(2, ['.vtt', '.srt'])
         self.source_files_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -1204,7 +1204,7 @@ class Window(LayoutLineWidget):
         self.sc_copy_videos_layout = QHBoxLayout()
         self.sc_layout.addLayout(self.sc_copy_videos_layout)
         # self.copy_sc_videos_list = QListWidget()
-        self.copy_sc_videos_list = DropList(['.mp4', '.m4v', '.mpg',
+        self.copy_sc_videos_list = DropList(1, ['.mp4', '.m4v', '.mpg',
                                             '.avi', '.mov', '.wmv', '.mkv'])
         self.copy_sc_videos_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
@@ -1259,7 +1259,7 @@ class Window(LayoutLineWidget):
         self.sc_gen_videos_layout = QHBoxLayout()
         self.sc_gen_layout.addLayout(self.sc_gen_videos_layout)
         # self.gen_sc_videos_list = QListWidget()
-        self.gen_sc_videos_list = DropList(['.mp4', '.m4v', '.mpg',
+        self.gen_sc_videos_list = DropList(1, ['.mp4', '.m4v', '.mpg',
                                             '.avi', '.mov', '.wmv', '.mkv'])
         self.gen_sc_videos_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
@@ -1314,7 +1314,7 @@ class Window(LayoutLineWidget):
         self.fr_gen_videos_layout = QHBoxLayout()
         self.fr_layout.addLayout(self.fr_gen_videos_layout)
         # self.gen_fr_videos_list = QListWidget()
-        self.gen_fr_videos_list = DropList(['.mp4', '.m4v', '.mpg',
+        self.gen_fr_videos_list = DropList(1, ['.mp4', '.m4v', '.mpg',
                                             '.avi', '.mov', '.wmv', '.mkv'])
         self.gen_fr_videos_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
@@ -1353,7 +1353,7 @@ class Window(LayoutLineWidget):
         self.stats_files_layout = QHBoxLayout()
         self.stats_layout.addLayout(self.stats_files_layout)
         # self.stats_files_list = QListWidget()
-        self.stats_files_list = DropList(['.vtt', '.srt'])
+        self.stats_files_list = DropList(1, ['.vtt', '.srt'])
         self.stats_files_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -1400,7 +1400,7 @@ class Window(LayoutLineWidget):
 
         self.conv_files_label = QLabel('Subtitle Files', objectName='sub_title')
         self.converters_layout.addWidget(self.conv_files_label)
-        self.conv_files_list = DropList(['.vtt', '.srt'])
+        self.conv_files_list = DropList(1, ['.vtt', '.srt'])
         self.conv_files_list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
@@ -1745,6 +1745,7 @@ class Window(LayoutLineWidget):
                       for row in range(prev_file_count)]
 
         repeated_files = []
+        valid_files = []
 
         # Get the clean file names and exclude repeated ones.
         if file_names:
@@ -1757,6 +1758,7 @@ class Window(LayoutLineWidget):
                 current_item.setText(file_name)
 
                 drop_list.insertItem(items_count + i, current_item)
+                valid_files.append(file_name)
 
         # Generate info modal to let the user know
         # about ignored repeated files.
@@ -1777,10 +1779,12 @@ class Window(LayoutLineWidget):
                 message
             )
 
+        # NOTE: This is not right. file_names should not be used here,
+        #       but only the valid files.
         if add_to_files_1:
-            self.files_1 = file_names
+            self.files_1 = valid_files
         elif add_to_files_2:
-            self.files_2 = file_names
+            self.files_2 = valid_files
 
 
     def remove_files(self, event):
@@ -3008,9 +3012,12 @@ class Window(LayoutLineWidget):
 
 
     def run_fr(self, event):
+        file_count = self.gen_fr_videos_list.count()
+        files = [self.gen_fr_videos_list.item(row).text()
+                 for row in range(file_count)]
         # if not self.gen_fr_videos_list_send:
         #     self.gen_fr_errors += 'ERROR: Cannot get frame rates. Please select at least one video file.\n'
-        if not self.files_1:
+        if not files:
             self.gen_fr_errors += 'ERROR: Cannot get frame rates. Please select at least one video file.\n'
 
 
@@ -3023,15 +3030,15 @@ class Window(LayoutLineWidget):
             longest_name = 0
 
             # for m in range(1, len(self.gen_fr_videos_list_send)):
-            for m in range(1, len(self.files_1)):
+            for m in range(1, len(files)):
                 # print(self.gen_fr_videos_list_send[m])
                 # print(len(self.gen_fr_videos_list_send[m]))
                 # print('\n\n')
                 # if (len(self.gen_fr_videos_list_send[m]) > longest_name):
-                if (len(self.files_1[m]) > longest_name):
+                if (len(files[m]) > longest_name):
                     #
                     # longest_name = len(self.gen_fr_videos_list_send[m])
-                    longest_name = len(self.files_1[m])
+                    longest_name = len(files[m])
 
             print(longest_name)
 
@@ -3040,14 +3047,14 @@ class Window(LayoutLineWidget):
 
             frame_rates = batch_get_frame_rates_gui(
                 # self.gen_fr_videos_list_send
-                self.files_1
+                files
             )
             print(frame_rates)
 
             text = ''
 
             # for i, j in zip(self.gen_fr_videos_list_send, frame_rates):
-            for i, j in zip(self.files_1, frame_rates):
+            for i, j in zip(files, frame_rates):
                 hyphens = '-' * (distance - len(i) - 2)
 
                 text += f'{i} {hyphens} {format(j, ".3f")} fps\n\n'
@@ -3229,10 +3236,11 @@ class DropList(QListWidget):
     """Subclass of the QListWidget to make it accept drops
     and handle events.
     """
-    def __init__(self, supported_formats=[]):
+    def __init__(self, list_index, supported_formats=[]):
         super().__init__()
         self.setAcceptDrops(True)
         # self.options_widget = options_widget
+        self.list_index = list_index
         self.supported_formats = supported_formats
 
     def dragEnterEvent(self, event):
@@ -3291,7 +3299,14 @@ class DropList(QListWidget):
                     repeated_files.append(
                         '- ' + file_name.replace('file:///', ''))
                     continue
+
+                # NOTE: This is very different from what is done
+                #       in add_files.  Note that here QListWidgetItem
+                #       is not used, just the text is inserted directly
+                #       into the DropList.
+                #       Why does it work like this too?
                 self.insertItem(i, file_name.replace('file:///', ''))
+                valid_files.append(file_name)
 
         if invalid_files:
             invalid_file_names = '\n\n'.join(invalid_files)
@@ -3326,6 +3341,11 @@ class DropList(QListWidget):
                 title,
                 message
             )
+
+        if self.list_index == 1:
+            self.files_1 = valid_files
+        elif self.list_index == 2:
+            self.files_2 = valid_files
 
 
 if __name__ == '__main__':
