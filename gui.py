@@ -2798,7 +2798,8 @@ class Window(LayoutLineWidget):
             errors += 'ERROR: Cannot run quality check with shot changes. Please select a directory for the videos.\n\n'
         if not self.qc_videos_dir and self.check_gaps_checkbox.isChecked():
             errors += 'ERROR: Cannot run quality check with gaps. Please select a directory for the videos.\n\n'
-        if not self.qc_sc_dir_send and self.check_sc_checkbox.isChecked():
+        # if not self.qc_sc_dir_send and self.check_sc_checkbox.isChecked():
+        if not self.qc_sc_list.text() and self.check_sc_checkbox.isChecked():
             errors += 'ERROR: Cannot run quality check with shot changes. Please select a directory for the scene changes.\n\n'
         if not self.qc_report_name and self.save_report_checkbox.isChecked():
             errors += 'ERROR: Cannot save quality check report. Please select a file name to save it.\n\n'
@@ -2830,7 +2831,7 @@ class Window(LayoutLineWidget):
             report = batch_quality_check(
                 self.qc_files_dir,
                 self.qc_videos_dir,
-                self.qc_sc_dir_send,
+                self.qc_sc_list.text(),
                 shot_changes=shot_changes,
                 CPS=True,
                 CPS_limit=cps_limit,
