@@ -2848,7 +2848,8 @@ class Window(LayoutLineWidget):
                 check_TCFOL=tcfol,
                 check_OST=ost,
                 report=report,
-                report_name=report_name
+                report_name=report_name,
+                SE_gaps=True
             )
             # print('Quality check DONE')
             # print(type(report))

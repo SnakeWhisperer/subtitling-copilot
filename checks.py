@@ -63,7 +63,8 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
                         max_lines=2, min_duration=0.833,
                         max_duration=7, ellipses=True, gaps=True,
                         report=False, report_name='', old=True,
-                        glyphs=True, check_TCFOL=True, check_OST=True, GUI=True):
+                        glyphs=True, check_TCFOL=True, check_OST=True,
+                        GUI=True, SE_gaps=True):
 
     # Check subtitle format.
     if s_format and s_format.lower() not in ['vtt', 'srt']:
@@ -207,7 +208,8 @@ def batch_quality_check(files_dir, videos_dir='', sc_dir='', shot_changes=True,
             glyph_list=glyph_list,
             check_TCFOL=check_TCFOL,
             check_OST=check_OST,
-            GUI=GUI
+            GUI=GUI,
+            SE_gaps=SE_gaps
         )
 
         if report or GUI:
@@ -233,7 +235,7 @@ def quality_check(file_name, video_name='', sc_dir='', shot_changes=True,
                   max_duration=7, ellipses=True, gaps=True, min_gap=2, batch=False,
                   report=False, report_name='', old=True,
                   glyphs=False, glyph_list=[], check_TCFOL=True, check_OST=True,
-                  GUI=True):
+                  GUI=True, SE_gaps=True):
 
     # print(f'Currently checking {file_name}')
     ext = os.path.splitext(file_name)[-1]
