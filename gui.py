@@ -926,6 +926,8 @@ class Window(LayoutLineWidget):
             'Use Subtitle Edit calculation',
             objectName='se_calc_check'
         )
+        self.use_SE_gaps_checkbox.setChecked(True)
+
         self.qc_setts_layout.addWidget(self.use_SE_gaps_checkbox, 2, 2)
         self.check_sc_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_sc_checkbox, 3, 2)
@@ -935,18 +937,20 @@ class Window(LayoutLineWidget):
         )
         self.check_TCFOL_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_TCFOL_checkbox, 4, 2)
-        self.check_OST_checkbox = QCheckBox(
-            'Check OSTs (MC only)',
-            objectName='sett_check'
-        )
-        self.check_OST_checkbox.setChecked(True)
-        self.qc_setts_layout.addWidget(self.check_OST_checkbox, 5, 2)
+
         self.check_NFG_checkbox = QCheckBox(
             'Check Netflix Glyph List',
             objectName='sett_check'
         )
         self.check_NFG_checkbox.setChecked(True)
-        self.qc_setts_layout.addWidget(self.check_NFG_checkbox, 0, 3)
+        self.qc_setts_layout.addWidget(self.check_NFG_checkbox, 5, 2)
+
+        self.check_OST_checkbox = QCheckBox(
+            'Check OSTs',
+            objectName='sett_check'
+        )
+        self.check_OST_checkbox.setChecked(True)
+        self.qc_setts_layout.addWidget(self.check_OST_checkbox, 0, 3)
 
         self.save_report_checkbox = QCheckBox('Save Report', objectName='sett_check')
         self.qc_setts_layout.addWidget(self.save_report_checkbox, 0, 5)
