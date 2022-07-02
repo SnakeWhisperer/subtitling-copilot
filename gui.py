@@ -237,6 +237,10 @@ class Window(LayoutLineWidget):
                 padding-left: 80px;
             }
 
+            QCheckBox#se_calc_check {
+                padding-left: 100px;
+            }
+
             QLineEdit#report_field {
                 background: #1c1b1c;
                 margin-left: 80px;
@@ -917,41 +921,55 @@ class Window(LayoutLineWidget):
             'Check timing to shot changes',
             objectName='sett_check'
         )
+
+        self.use_SE_gaps_checkbox = QCheckBox(
+            'Use Subtitle Edit calculation',
+            objectName='se_calc_check'
+        )
+        self.qc_setts_layout.addWidget(self.use_SE_gaps_checkbox, 2, 2)
         self.check_sc_checkbox.setChecked(True)
-        self.qc_setts_layout.addWidget(self.check_sc_checkbox, 2, 2)
+        self.qc_setts_layout.addWidget(self.check_sc_checkbox, 3, 2)
         self.check_TCFOL_checkbox = QCheckBox(
             'Check text can fit in one line',
             objectName='sett_check'
         )
         self.check_TCFOL_checkbox.setChecked(True)
-        self.qc_setts_layout.addWidget(self.check_TCFOL_checkbox, 3, 2)
+        self.qc_setts_layout.addWidget(self.check_TCFOL_checkbox, 4, 2)
         self.check_OST_checkbox = QCheckBox(
             'Check OSTs (MC only)',
             objectName='sett_check'
         )
         self.check_OST_checkbox.setChecked(True)
-        self.qc_setts_layout.addWidget(self.check_OST_checkbox, 4, 2)
+        self.qc_setts_layout.addWidget(self.check_OST_checkbox, 5, 2)
         self.check_NFG_checkbox = QCheckBox(
             'Check Netflix Glyph List',
             objectName='sett_check'
         )
         self.check_NFG_checkbox.setChecked(True)
-        self.qc_setts_layout.addWidget(self.check_NFG_checkbox, 5, 2)
+        self.qc_setts_layout.addWidget(self.check_NFG_checkbox, 0, 3)
 
         self.save_report_checkbox = QCheckBox('Save Report', objectName='sett_check')
-        self.qc_setts_layout.addWidget(self.save_report_checkbox, 0, 4)
+        self.qc_setts_layout.addWidget(self.save_report_checkbox, 0, 5)
         self.save_report_entry = QLineEdit(objectName='report_field')
-        self.qc_setts_layout.addWidget(self.save_report_entry, 1, 4)
+        self.qc_setts_layout.addWidget(self.save_report_entry, 1, 5)
         self.save_report_browse = QPushButton('Browse...', objectName='browse')
-        self.qc_setts_layout.addWidget(self.save_report_browse, 1, 5)
+        self.qc_setts_layout.addWidget(self.save_report_browse, 1, 6)
 
         self.qc_setts_layout.setColumnStretch(0, 0)
         self.qc_setts_layout.setColumnStretch(1, 0)
         self.qc_setts_layout.setColumnStretch(2, 0)
-        self.qc_setts_layout.setColumnStretch(3, 150)
-        self.qc_setts_layout.setColumnStretch(4, 200)
-        self.qc_setts_layout.setColumnStretch(5, 0)
+        self.qc_setts_layout.setColumnStretch(3, 0)
+        self.qc_setts_layout.setColumnStretch(4, 150)
+        self.qc_setts_layout.setColumnStretch(5, 200)
+        self.qc_setts_layout.setColumnStretch(6, 0)
         self.qc_setts_layout.setColumnMinimumWidth(1, 55)
+
+        self.qc_setts_layout.setRowMinimumHeight(0, 25)
+        self.qc_setts_layout.setRowMinimumHeight(1, 25)
+        self.qc_setts_layout.setRowMinimumHeight(2, 25)
+        self.qc_setts_layout.setRowMinimumHeight(3, 25)
+        self.qc_setts_layout.setRowMinimumHeight(4, 25)
+        self.qc_setts_layout.setRowMinimumHeight(5, 25)
 
         # self.qc_setts_layout.setColumnStretch(5, 1)
 

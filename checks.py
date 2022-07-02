@@ -627,6 +627,21 @@ def check_gaps_one(index, subtitles, invalid_range=(3,11), error_counter=1,
         return gap_errors
 
 
+# def check_gaps_ms(index, subtitles, invalid_range=(3,11), error_counter=1,
+#                   frame_rate=24, sorted=False, snapped=False, ext_q=False,
+#                   off_forward=False):
+
+#     gap_errors = {}
+#     min_gap_ms =
+
+#     for j in range(len(subtitles)):
+
+#         if j != index:
+#             gap = (subtitles[j].start_time.total_seconds
+#                    - subtitles[index].end_time.total_seconds)
+#             if (gap)
+
+
 def check_shot_changes(start_time, end_time, sub_num,
                        subtitle, shot_change_list,
                        frame_rate=24, error_counter=1):
