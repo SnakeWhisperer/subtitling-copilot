@@ -246,6 +246,10 @@ class Window(LayoutLineWidget):
                 margin-left: 80px;
             }
 
+            QLabel#line_val_per {
+                margin-left: 110px;
+            }
+
             QSpinBox, QDoubleSpinBox {
                 border: 1px solid rgba(167, 202, 212, 80);
                 background: #1c1b1c;
@@ -952,21 +956,29 @@ class Window(LayoutLineWidget):
         self.check_OST_checkbox.setChecked(True)
         self.qc_setts_layout.addWidget(self.check_OST_checkbox, 0, 3)
 
+        self.qc_line_sett_label = QLabel('Line value', objectName='line_val_per')
+        self.qc_setts_layout.addWidget(self.qc_line_sett_label, 1, 3)
+
+        self.qc_line_sett_spin = QSpinBox()
+        self.qc_line_sett_spin.setValue(5)
+        self.qc_setts_layout.addWidget(self.qc_line_sett_spin, 1, 4)
+
         self.save_report_checkbox = QCheckBox('Save Report', objectName='sett_check')
-        self.qc_setts_layout.addWidget(self.save_report_checkbox, 0, 5)
+        self.qc_setts_layout.addWidget(self.save_report_checkbox, 0, 6)
         self.save_report_entry = QLineEdit(objectName='report_field')
-        self.qc_setts_layout.addWidget(self.save_report_entry, 1, 5)
+        self.qc_setts_layout.addWidget(self.save_report_entry, 1, 6)
         self.save_report_browse = QPushButton('Browse...', objectName='browse')
-        self.qc_setts_layout.addWidget(self.save_report_browse, 1, 6)
+        self.qc_setts_layout.addWidget(self.save_report_browse, 1, 7)
 
         self.qc_setts_layout.setColumnStretch(0, 0)
         self.qc_setts_layout.setColumnStretch(1, 0)
         self.qc_setts_layout.setColumnStretch(2, 0)
         self.qc_setts_layout.setColumnStretch(3, 0)
-        self.qc_setts_layout.setColumnStretch(4, 150)
-        self.qc_setts_layout.setColumnStretch(5, 200)
-        self.qc_setts_layout.setColumnStretch(6, 0)
-        self.qc_setts_layout.setColumnMinimumWidth(1, 55)
+        self.qc_setts_layout.setColumnStretch(4, 0)
+        self.qc_setts_layout.setColumnStretch(5, 150)
+        self.qc_setts_layout.setColumnStretch(6, 200)
+        self.qc_setts_layout.setColumnStretch(7, 0)
+        # self.qc_setts_layout.setColumnMinimumWidth(1, 20)
 
         self.qc_setts_layout.setRowMinimumHeight(0, 25)
         self.qc_setts_layout.setRowMinimumHeight(1, 25)
