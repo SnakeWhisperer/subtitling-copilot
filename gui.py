@@ -2575,7 +2575,7 @@ class Window(LayoutLineWidget):
 
                 if warnings:
                     warnings_string = ''
-                    for warning_key in warning.keys():
+                    for warning_key in warnings.keys():
                         warnings_string += 'Warnings\n\n\n'
                         warnings_string += f'{warning_key}\n\t'
                         warnings_string += f'{warnings[warning_key]}\n'
@@ -2947,8 +2947,8 @@ class Window(LayoutLineWidget):
                 save_path,
                 old=False,
                 #-----
-                CPS_limit=28,
-                CPL_limit=96
+                CPS_limit=27,
+                CPL_limit=48,
             )
 
             info_modal = QMessageBox.information(

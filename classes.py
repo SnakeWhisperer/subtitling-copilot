@@ -50,7 +50,7 @@ class Timecode(object):
             self.frames = round(self.fraction * frame_rate)
             self.total_seconds = float(round(time, 3))
 
-            self.creation_format = 'seconds'            
+            self.creation_format = 'seconds'
 
         # NOTE: Confirm all possible formats for these timecodes.
         #       Make sure to include the media format
@@ -60,10 +60,10 @@ class Timecode(object):
         elif  type(time) == str:
             # SRT
             match_1 = re.search('\d\d:\d\d:\d\d,\d\d\d', time)
-            
+
             # VTT 1
             match_2 = re.search('\d+:\d\d:\d\d\.\d\d\d', time)
-            
+
             # VTT 2
             match_3 = re.search('\d\d:\d\d\.\d\d\d', time)
 
@@ -96,7 +96,7 @@ class Timecode(object):
                         self.seconds,
                     ) = [float(x.replace(',', '.'))
                          for x in re.findall('\d+[\.,]?\d*', time)]
-                    
+
                     self.hours = int(self.hours)
 
                 # Process valid timecodes with minutes, seconds,
@@ -107,7 +107,7 @@ class Timecode(object):
                         self.minutes,
                         self.seconds,
                     ) = [float(x) for x in re.findall('\d+\.*\d*', time)]
-                
+
                 self.fraction = self.seconds % 1
                 self.minutes = int(self.minutes)
                 self.seconds = int(self.seconds)
@@ -138,7 +138,7 @@ class Timecode(object):
                 # !! NOTE: This might need to be changed
                 #                 when dropped frames are considered.
                 # !! NOTE: Make sure this rounding
-                #          does not affect accuracy. 
+                #          does not affect accuracy.
                 self.fraction = round(self.frames / frame_rate, 3)
 
             else:
@@ -152,7 +152,7 @@ class Timecode(object):
             self.total_seconds = (
                 self.hours * 3600 + self.minutes * 60
                 + self.seconds + self.fraction)
- 
+
         if self.creation_format in ['seconds', 'SRT', 'VTT_1', 'VTT_2', 'ASS']:
             time_for_frames = self.total_seconds
 
@@ -205,11 +205,11 @@ class Timecode(object):
         elif self.creation_format == 'ASS':
             string = self.print_ASS()
         elif self.creation_format == 'SMPTE':
-            string = self.print_SMPTE() 
+            string = self.print_SMPTE()
 
         return string
 
-    
+
     def __repr__(self):
         """
         """
@@ -237,7 +237,7 @@ class Timecode(object):
 
         return self.total_seconds == other.total_seconds
 
-    
+
     def __lt__(self, other):
         """
         """
@@ -268,8 +268,8 @@ class Timecode(object):
 
 
         return self.total_seconds >= other.total_seconds
-        
-    
+
+
     def print_SRT(self):
         """
         """
@@ -354,7 +354,7 @@ class Timecode(object):
 
 
     def offset(self, offset, in_frames=False):
-        
+
         if type(offset) == int or type(offset) == float and not in_frames:
             new_time = self.total_seconds + offset
 
@@ -393,9 +393,9 @@ class Timecode(object):
         snapped : bool, optional
             [description], by default True
         """
-        
+
         rounded_frame_rate = round(self.frame_rate)
-        
+
         if type(time) == int or type(time) == float:
             if time_in_frames:
                 pass
@@ -417,14 +417,14 @@ class Timecode(object):
 
         elif type(time) == str:
             time_fragments = [int(x) for x in re.findall('\d+', time)]
-            
+
             counted = (
                 int(time_fragments[0]) * rounded_frame_rate * 3600
                 + int(time_fragments[1]) * rounded_frame_rate * 60
                 + int(time_fragments[2]) * rounded_frame_rate
                 + int(time_fragments[3])
             )
-            
+
             if drop_frame:
                 # Check if the timecode has an invalid frame
                 # (one that's supposed to be dropped) and correct it.
@@ -433,18 +433,18 @@ class Timecode(object):
                     and (counted // (rounded_frame_rate * 60)) % 10 != 0):
                     # Frobnicating.
                     counted += 2
-                
+
                 droppped = (
                     (counted // (rounded_frame_rate * 60)) * 2
                     - (counted // (rounded_frame_rate * 600)) * 2
                 )
-                
+
                 rendered = counted - droppped
             else:
                 rendered = counted
-            
+
             total_time = rendered / frame_rate
-        
+
         return [counted, rendered]
 
 
@@ -452,12 +452,12 @@ class Timecode(object):
         dropped = (rendered // (rounded_frame_rate * 60)) * 2
         counted = rendered + dropped
         dropped = (counted // (rounded_frame_rate * 60)) * 2
-        
+
         # Updating the drop count with the tenth-minute
         # exception.
         dropped = dropped - (counted // (rounded_frame_rate * 600)) * 2
         counted = (rendered + dropped)
-        
+
         return counted
 
 
@@ -529,7 +529,7 @@ class Subtitle(object):
 
         return string
 
-    
+
     def get_untagged_text(self):
         """[summary]
         NOTE: Not currently used. Maybe will never be used again.
@@ -546,7 +546,7 @@ class Subtitle(object):
             untagged_line = re.sub('</font>', '', untagged_line)
             untagged_line = html.unescape(untagged_line)
             untagged_text.append(untagged_line)
-            
+
 
         return untagged_text
 
@@ -566,7 +566,7 @@ class Subtitle(object):
 
         return (total_length, total_length_no_spaces)
 
-    
+
     def get_line_lengths(self):
         """
         !! NOTE: If this method is only going to be used by the class
@@ -599,7 +599,7 @@ class Subtitle(object):
 
         return round(duration, 3)
 
-    
+
     def get_CPS(self, spaces=True):
         """
         !! NOTE: If this method is only going to be used by the class
@@ -662,7 +662,7 @@ class SRT(Subtitle):
 
     # NOTE: The __str__ method for this class will need to be defined
     #       if the SRT class starts taking positioning attributes.
-    '''    
+    '''
     def __str__(self):
         """[summary]
 
@@ -677,7 +677,7 @@ class SRT(Subtitle):
 
 
     def to_VTT(self):
-        
+
         # NOTE: It's necessary to take care of HTML entities here
         #       and see if there is a <font> tag.
         vtt_subtitle = WebVTT(
@@ -705,7 +705,7 @@ class SRT(Subtitle):
 #                  line_align='start', snap_to_lines=True,
 #                  position='auto', position_align='auto',
 #                  size=100, align='center', italics=[], bold=[], underline=[]):
-        
+
 #         # NOTE: What would be the difference between using this
 #         #       and using the super() method.
 #         Subtitle.__init__(self, number, text, start_time, end_time, dialogue,
@@ -722,7 +722,7 @@ class SRT(Subtitle):
 #         self.align = align
 #         self.bold = bold
 
-    
+
 #     def __str__(self):
 #         """
 #         """
@@ -733,7 +733,7 @@ class SRT(Subtitle):
 #         else:
 #             start_print = self.start_time.print_VTT_2()
 #             end_print = self.end_time.print_VTT_2()
-        
+
 #         setting_string = ''
 #         newline = '\n'
 
@@ -759,16 +759,16 @@ class SRT(Subtitle):
 #                 setting_string = f'{setting_string} position:{self.position}%,{self.position_align}'
 #             else:
 #                 setting_string = f'{setting_string} position:{self.position}%'
-            
-            
+
+
 #             # if self.position == 'auto' and self.position_align != 'auto':
 #             #     setting_string = f'{setting_string} position:{self.position},{self.position_align}'
 #             # elif self.position != 'auto' and self.position_align != 'auto':
 #             #     setting_string = f'{setting_string} position:{self.position}%,{self.position_align}'
 #             # elif self.position != 'auto' and self.position_align == 'auto':
 #             #     setting_string = f'{setting_string} position:{self.position}%'
-            
-            
+
+
 #             # else:
 #             #     setting_string = f'{setting_string} position:{self.position}%'
 
@@ -797,12 +797,12 @@ class SRT(Subtitle):
 
 #         return string
 
-    
+
 #     def __repr__(self):
 #         """
 #         """
 
-        
+
 #         string = (
 #             f'WebVTT(\n\t{self.number},\n\t{self.text},\n\t'
 #             f'{self.start_time.__repr__()},\n\t'
@@ -845,7 +845,7 @@ class WebVTT(Subtitle):
                  vertical='', line='auto', line_align='start',
                  snap_to_lines=True, position='auto', position_align='auto',
                  size=100, align='center', italics=[], bold=[], underline=[]):
-        
+
         # NOTE: What would be the difference between using this
         #       and using the super() method.
         Subtitle.__init__(self, number, text, tokenized_text, untagged_text,
@@ -863,7 +863,7 @@ class WebVTT(Subtitle):
         self.align = align
         self.bold = bold
 
-    
+
     def __str__(self):
         """
         """
@@ -876,7 +876,7 @@ class WebVTT(Subtitle):
         else:
             start_print = self.start_time.print_VTT_2()
             end_print = self.end_time.print_VTT_2()
-        
+
         setting_string = ''
         newline = '\n'
 
@@ -902,16 +902,16 @@ class WebVTT(Subtitle):
                 setting_string = f'{setting_string} position:{self.position}%,{self.position_align}'
             else:
                 setting_string = f'{setting_string} position:{self.position}%'
-            
-            
+
+
             # if self.position == 'auto' and self.position_align != 'auto':
             #     setting_string = f'{setting_string} position:{self.position},{self.position_align}'
             # elif self.position != 'auto' and self.position_align != 'auto':
             #     setting_string = f'{setting_string} position:{self.position}%,{self.position_align}'
             # elif self.position != 'auto' and self.position_align == 'auto':
             #     setting_string = f'{setting_string} position:{self.position}%'
-            
-            
+
+
             # else:
             #     setting_string = f'{setting_string} position:{self.position}%'
 
@@ -940,12 +940,12 @@ class WebVTT(Subtitle):
 
         return string
 
-    
+
     def __repr__(self):
         """
         """
 
-        
+
         string = (
             f'WebVTT(\n\t{self.number},\n\t{self.text.__repr__()},\n\t'
             f'{self.tokenized_text},\n\t'
@@ -979,7 +979,7 @@ class WebVTT(Subtitle):
                     op = '<'
                 else:
                     op = '</'
-                
+
                 text += op + token.name + '>'
 
         text = re.sub('&nbsp;', '\u00a0', text)
@@ -1020,7 +1020,7 @@ class WebVTTRegion(object):
 
 
     def __str__(self):
-        
+
         output = (
             f'REGION'
             f'\nid:{self.identifier}'
@@ -1053,7 +1053,7 @@ class WebVTTRegion(object):
             f'vp_anchor_y={self.vp_anchor_y}, '
             f'scroll={self.scroll.__repr__()})'
         )
-        
+
 
         return string
 
@@ -1068,14 +1068,14 @@ class TTML(Subtitle):
 
     def __init__(self, number, text, start_time, end_time, dialogue=False,
                  italics=[], bold=[], underline=[], region=None, style=None):
-        
+
         Subtitle.__init__(self, number, text, start_time, end_time, dialogue,
                           italics=italics, underline=underline)
 
         self.bold = bold
         self.region = region
         self.style = style
-    
+
     def __str__(self):
         pass
 
@@ -1197,7 +1197,7 @@ class StartTag(object):
             self.token_string = '<' + self.name
             if classes:
                 self.token_string += '.' + '.'.join(self.classes)
-            
+
             if closed:
                 self.token_string += annotation + '>'
 
@@ -1305,7 +1305,7 @@ def insert_tags(text, italics, bold, underline):
             for j, it_ind_pair in enumerate(italics[i]):
                 format_dict[it_ind_pair[0]] = '<i>'
                 format_dict[it_ind_pair[1]] = '</i>'
-        
+
         # NOTE: Checking for 'bold' only because, as of yet,
         #       not all formats are being decoded in the same way.
         #       They should be [None, None, ...] if the format
@@ -1349,11 +1349,11 @@ def insert_tags(text, italics, bold, underline):
             for k in range(len(line)):
                 if k in format_indexes:
                     current_line += format_dict[k]
-                    
+
                     # NOTE: THIS WAS AN ATTEMPT AT ORDERING THE TAGS.
                     # open_list = re.findall('<[iub]>', format_dict[k])
                     # close_list = re.findall('</[iub]>', format_dict[k])
-                    
+
                     # if open_list:
                     #     italics_order = 0
                     #     bold_order = 0
@@ -1367,7 +1367,7 @@ def insert_tags(text, italics, bold, underline):
                     #             bold_order = open_order
                     #         elif 'u' in m:
                     #             underline_order = open_order
-                    #         open_order += 
+                    #         open_order +=
 
                 current_line += line[k]
 
@@ -1375,5 +1375,5 @@ def insert_tags(text, italics, bold, underline):
             current_line = line
 
         tagged_text.append(current_line)
-                
+
     return tagged_text

@@ -338,8 +338,8 @@ def batch_gen_CPS_sheet(en_path, tar_path, out_name, OST=False, seg=False,
 
 
 def gen_CPS_sheet(en_file_name, tar_file_name, workbook=None, worksheet=None,
-                  OST=False, seg=False, CPS=True, CPS_limit=25, CPL=True,
-                  CPL_limit=42, lines=True, max_lines=2,
+                  OST=False, seg=False, CPS=True, CPS_limit=11, CPL=True,
+                  CPL_limit=16, lines=True, max_lines=2,
                   batch=False, row_count=2, old=True, GUI=True):
     """Generates or writes to a .xlsx file with the text
     with reading speed issues and previous and subsequent segments
